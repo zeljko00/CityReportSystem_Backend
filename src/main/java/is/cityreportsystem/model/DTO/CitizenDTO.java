@@ -1,6 +1,9 @@
 package is.cityreportsystem.model.DTO;
 
+import is.cityreportsystem.model.Citizen;
 import is.cityreportsystem.model.Report;
+import is.cityreportsystem.model.enums.UserRole;
+import is.cityreportsystem.model.enums.UserStatus;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,11 +21,11 @@ public class CitizenDTO {
 	private String lastName;
 	private String phone;
 	private String username;
-	private String passwordHash;
-	private byte active;
-	private List<ReportDTO> myReports; 	// = new ArrayList<Report>();
+	private String password;
+	private UserStatus status;
+	private UserRole role;
 
 	public String toString(){
-		return idCard+" "+firstName+" "+lastName+" "+phone+" "+passwordHash;
+		return idCard+" "+firstName+" "+lastName+" "+phone+" "+password;
 	}
 }

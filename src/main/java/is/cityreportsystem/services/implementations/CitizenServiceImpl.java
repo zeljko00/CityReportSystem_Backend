@@ -8,10 +8,14 @@ import java.util.Base64.Encoder;
 import is.cityreportsystem.DAO.CitizenDAO;
 import is.cityreportsystem.model.Citizen;
 import is.cityreportsystem.model.DTO.CitizenDTO;
+import is.cityreportsystem.model.enums.UserRole;
+import is.cityreportsystem.model.enums.UserStatus;
 import is.cityreportsystem.services.CitizenService;
 import jakarta.transaction.Transactional;
 
+import org.aspectj.weaver.bcel.BcelRenderer;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,37 +24,12 @@ public class CitizenServiceImpl implements CitizenService {
 
 	private CitizenDAO citizenDAO;
 	private ModelMapper modelMapper;
-	private MessageDigest digest;
-	private Encoder base64Encoder;
+	private BCryptPasswordEncoder encoder;
 
 	public CitizenServiceImpl(CitizenDAO citizenDAO, ModelMapper modelMapper) throws NoSuchAlgorithmException {
 		this.citizenDAO = citizenDAO;
 		this.modelMapper = modelMapper;
-		try {
-			digest = MessageDigest.getInstance("MD5");
-			base64Encoder = Base64.getEncoder();
-		}catch (NoSuchAlgorithmException e){
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	public CitizenDTO login(String username, String password) {
-		try {
-			byte[] data = password.getBytes("UTF-8");
-			byte[] dataHash = digest.digest(data);
-			byte[] encodedData = base64Encoder.encode(dataHash);
-			String passwordHash = new String(encodedData);
-			System.out.println(passwordHash);
-			Citizen citizen=citizenDAO.findCitizenByUsernameAndPasswordHash(username,passwordHash);
-			if(citizen!=null)
-				return modelMapper.map(citizen,CitizenDTO.class);
-			else
-				return null;
-		} catch (Exception e) {
-			e.printStackTrace(); 			//logovati
-			return null;
-		}
+		encoder = new BCryptPasswordEncoder();
 	}
 
 	public CitizenDTO findCitizenById(long id) {
@@ -59,45 +38,49 @@ public class CitizenServiceImpl implements CitizenService {
 	}
 
 	public CitizenDTO createCitizen(CitizenDTO c) {
-		System.out.println(c);
-		try {
-			byte[] data = c.getPasswordHash().getBytes("UTF-8");
-			byte[] dataHash = digest.digest(data);
-			byte[] encodedData = base64Encoder.encode(dataHash);
-			String passwordHash = new String(encodedData);
-			c.setPasswordHash(passwordHash);
-			c.setUsername(c.getFirstName()+c.getIdCard());
-			c.setActive((byte)1);
-			Citizen citizen=modelMapper.map(c,Citizen.class);
-			Citizen result=citizenDAO.saveAndFlush(citizen);
-			c.setId((result.getId()));
-			return c;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	public CitizenDTO updateCitizen(CitizenDTO c) {
-		try {
-			byte[] data = c.getPasswordHash().getBytes("UTF-8");
-			byte[] dataHash = digest.digest(data);
-			byte[] encodedData = base64Encoder.encode(dataHash);
-			String passwordHash = new String(encodedData);
+		System.out.println("Creating citizen!");
 
-			Citizen citizen=citizenDAO.findById(c.getId()).get();
-			if(citizen!=null){
-				citizen.setPhone(c.getPhone());
-				citizen.setActive(c.getActive());
-				citizen.setPasswordHash(passwordHash);
-
-				citizenDAO.saveAndFlush(citizen);
+		//new citizen will be created if account linked with specified id card number doesn't already exist
+		if(!checkIfIdCardIsUsed(c.getIdCard())){
+			try {
+				String passwordHash = encoder.encode(c.getPassword());
+				c.setPassword(passwordHash);
+				c.setUsername(c.getFirstName()+c.getIdCard());
+				c.setStatus(UserStatus.ACTIVE);
+				c.setRole(UserRole.CITIZEN);
+				Citizen citizen=modelMapper.map(c,Citizen.class);
+				Citizen result=citizenDAO.saveAndFlush(citizen);
+				System.out.println("Citizen created");
+				c.setId((result.getId()));
 				return c;
+			} catch (Exception e) {
+				e.printStackTrace(); //logovati
 			}
-			return null;
-		} catch (Exception e) {
-			return null;
 		}
+		return null;
 	}
+//	public CitizenDTO updateCitizen(CitizenDTO c) {
+//		try {
+//			byte[] data = c.getPasswordHash().getBytes("UTF-8");
+//			byte[] dataHash = digest.digest(data);
+//			byte[] encodedData = base64Encoder.encode(dataHash);
+//			String passwordHash = new String(encodedData);
+//
+//			Citizen citizen=citizenDAO.findById(c.getId()).get();
+//			if(citizen!=null){
+//				citizen.setPhone(c.getPhone());
+//				citizen.setActive(c.getActive());
+//				citizen.setPasswordHash(passwordHash);
+//
+//				citizenDAO.saveAndFlush(citizen);
+//				return c;
+//			}
+//			return null;
+//		} catch (Exception e) {
+//			return null;
+//		}
+//	}
+	//checks whether account, linked with specifed idCard number, already exists
 	public boolean checkIfIdCardIsUsed(String idCard) {
 		Citizen citizen=citizenDAO.findByIdCard(idCard);
 		return citizen!=null;

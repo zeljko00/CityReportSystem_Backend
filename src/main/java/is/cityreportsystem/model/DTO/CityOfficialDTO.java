@@ -16,8 +16,5 @@ import java.util.List;
 public class CityOfficialDTO extends CitizenDTO {
 	private String position;
 	private String education;
-	private String serviceUsername;
-	private String servicePassword;
 	private CityServiceDTO department;
-	private List<EventDTO> myEvents=new ArrayList<EventDTO>();
 }

@@ -12,5 +12,4 @@ public class CityServiceDTO {
     private String name;
     private String phone;
     private String mail;
-    private List<CityOfficialDTO> employees;
 }

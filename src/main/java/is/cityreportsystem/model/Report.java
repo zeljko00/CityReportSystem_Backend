@@ -3,6 +3,8 @@ package is.cityreportsystem.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 public class Report {
@@ -23,4 +25,6 @@ public class Report {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recipient", referencedColumnName = "id", nullable = true)
 	private CityService recipient;
+	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY)
+	private List<ReportImage> images;
 }

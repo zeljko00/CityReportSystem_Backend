@@ -1,6 +1,9 @@
 package is.cityreportsystem.model.DTO;
 
 import lombok.Data;
+
+import java.util.List;
+
 @Data
 public class ReportDTO {
 	private long id;
@@ -14,6 +17,5 @@ public class ReportDTO {
 	private double y;
 	private CitizenDTO creator;
 	private CityServiceDTO recipient;
-
-
+	private List<ImageDTO> images;
 }

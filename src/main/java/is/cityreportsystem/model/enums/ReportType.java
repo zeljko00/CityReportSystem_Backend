@@ -1,4 +1,4 @@
-package is.cityreportsystem.model;
+package is.cityreportsystem.model.enums;
 
 public enum ReportType {
 	HEATING,WATER,ELECTRICITY,GARBAGE,PARKING,ROAD,SNOW,TRAFFIC,VIOLENCE,HEALTCARE,PEACE,FIRE,MIGRANTS,LIGHTS,TRAFFIC_ACCIDENT,BRIBE,COMPANY

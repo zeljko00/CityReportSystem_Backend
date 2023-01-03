@@ -6,16 +6,14 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 @Entity
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="id")				//referencing base clase object (required for vertical inheritance mapping)
 @Data
 public class CityOfficial extends  Citizen{
 	private String position;
 	private String education;
-	private String serviceUsername;
-	private String servicePassword;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="department", referencedColumnName = "id")
 	private CityService department;
-	@OneToMany(mappedBy = "creator")
-	private List<Event> myEvents=new ArrayList<Event>();
+	@OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+	private List<Event> myEvents;
 }

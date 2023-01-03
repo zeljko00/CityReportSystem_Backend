@@ -4,6 +4,8 @@ import is.cityreportsystem.model.CityOfficial;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class EventDTO {
 	private long id;
@@ -16,4 +18,6 @@ public class EventDTO {
 	private String date;
 	private short active;
 	private CityOfficialDTO creator;
+	private List<ImageDTO> images;
+	private List<CoordinateDTO> coords;
 }

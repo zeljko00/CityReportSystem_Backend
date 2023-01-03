@@ -14,9 +14,9 @@ public class CityService {
     private String name;
     private String phone;
     private String mail;
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<CityOfficial> employees;
-    @OneToMany(mappedBy = "recipient")
+    @OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY)
     private List<Report> reports;
 
 }
