@@ -44,6 +44,7 @@ public class CitizenServiceImpl implements CitizenService {
 		if(!checkIfIdCardIsUsed(c.getIdCard())){
 			try {
 				String passwordHash = encoder.encode(c.getPassword());
+				System.out.println(passwordHash);
 				c.setPassword(passwordHash);
 				c.setUsername(c.getFirstName()+c.getIdCard());
 				c.setStatus(UserStatus.ACTIVE);

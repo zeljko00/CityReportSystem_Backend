@@ -16,6 +16,5 @@ public class ReportDTO {
 	private double x;
 	private double y;
 	private CitizenDTO creator;
-	private CityServiceDTO recipient;
 	private List<ImageDTO> images;
 }

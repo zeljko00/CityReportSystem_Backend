@@ -66,6 +66,10 @@ public class WebSecurityConfiguration{
                 .requestMatchers(HttpMethod.GET, "/login").permitAll() //enables unauthorized requests
                 .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/active").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
+                .requestMatchers(HttpMethod.POST, "/reports").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/author/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/reports/images/upload").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
 //                        .antMatchers("/api/v1/auth/**").permitAll()
 

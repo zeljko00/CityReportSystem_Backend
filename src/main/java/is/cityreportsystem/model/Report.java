@@ -1,5 +1,6 @@
 package is.cityreportsystem.model;
 
+import is.cityreportsystem.model.enums.ReportState;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,15 +17,13 @@ public class Report {
 	private String date;
 	private String content;
 	private String type;
-	private String state;
+	@Enumerated(EnumType.STRING)
+	private ReportState state;
 	private double x;
 	private double y;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator", referencedColumnName = "id", nullable = true)
 	private Citizen creator;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "recipient", referencedColumnName = "id", nullable = true)
-	private CityService recipient;
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY)
 	private List<ReportImage> images;
 }
