@@ -45,21 +45,43 @@ public class ReportServiceImpl implements ReportService {
         this.reportImageService = reportImageService;
     }
 
-    public boolean saveImage(byte[] data, int id){
-        if(!uploadedImages.containsKey(Integer.toString(id)))
-            uploadedImages.put(Integer.toString(id),new ArrayList<String>());
-        String imageName=id+"_"+uploadedImages.get(Integer.toString(id)).size()+".jpg";
-        uploadedImages.get(Integer.toString(id)).add(imageName);
-        System.out.println("added: "+id);
-        String path=imagesRepo+File.separator+imageName;
+    public boolean saveImage(byte[] data, String id){
+        String[] tokens=id.split("--");
         try{
+            int ident=Integer.parseInt(tokens[0]);
+        if(!uploadedImages.containsKey(Integer.toString(ident)))
+            uploadedImages.put(Integer.toString(ident),new ArrayList<String>());
+        String imageName=id;
+        uploadedImages.get(Integer.toString(ident)).add(imageName);
+
+        String path=imagesRepo+File.separator+imageName;
+
             File file=new File(path);
             file.createNewFile();
             Files.write(Paths.get(path), data);
+            System.out.println("added: "+ident);
         return true;
         }catch(Exception e){
             e.printStackTrace();
             return false;
+        }
+    }
+    public void deleteImage(String id){
+        String[] tokens=id.split("--");
+        try{
+            int ident=Integer.parseInt(tokens[0]);
+            if(uploadedImages.containsKey(Integer.toString(ident))){
+            String imageName=id;
+            uploadedImages.get(Integer.toString(ident)).remove(imageName);
+
+            String path=imagesRepo+File.separator+imageName;
+
+            File file=new File(path);
+            file.delete();}
+
+        }catch(Exception e){
+            e.printStackTrace();
+
         }
     }
     public ReportDTO createReport(ReportRequest report){
@@ -90,9 +112,9 @@ public class ReportServiceImpl implements ReportService {
             for(String s: images){
                 ReportImage reportImage=new ReportImage();
                 reportImage.setReport(result);
-                reportImage.setName(result.getId()+"_"+count+++".jpeg");
+                reportImage.setName(result.getId()+"_"+count+++".jpg");
                 File temp=new File(imagesRepo+File.separator+s);
-                temp.renameTo(new File(imagesRepo+File.separator+reportImage.getName()+".jpg"));
+                temp.renameTo(new File(imagesRepo+File.separator+reportImage.getName()));
                 reportImageService.addImage(reportImage);
             }
         }
@@ -107,6 +129,7 @@ public class ReportServiceImpl implements ReportService {
         if(reports!=null)
             for(Report report: reports)
                 result.add(modelMapper.map(report,ReportDTO.class));
+        System.out.println("Broj prijava:"+result.size());
         return result;
     }
 }

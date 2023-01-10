@@ -4,4 +4,5 @@ import is.cityreportsystem.model.ReportImage;
 
 public interface ReportImageService {
     void addImage(ReportImage reportImage);
+    public byte[] getImageById(long id);
 }

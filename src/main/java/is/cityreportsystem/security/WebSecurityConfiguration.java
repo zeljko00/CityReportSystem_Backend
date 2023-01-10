@@ -67,9 +67,12 @@ public class WebSecurityConfiguration{
                 .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/active").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reports").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/author/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reports/images/upload").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/images/*").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/reports/images/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
 //                        .antMatchers("/api/v1/auth/**").permitAll()
 
