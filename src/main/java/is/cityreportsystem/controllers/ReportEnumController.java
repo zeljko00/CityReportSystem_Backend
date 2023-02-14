@@ -2,6 +2,7 @@ package is.cityreportsystem.controllers;
 
 import is.cityreportsystem.model.enums.ReportState;
 import is.cityreportsystem.model.enums.ReportType;
+import is.cityreportsystem.services.ReportTypeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +15,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/reports")
 public class ReportEnumController {
+    private final ReportTypeService reportTypeService;
+
+    public ReportEnumController(ReportTypeService reportTypeService) {
+        this.reportTypeService = reportTypeService;
+    }
 
     @GetMapping("/types")
     public ResponseEntity<?> getReportTypes() {
-        List<String> result = Arrays.stream(ReportType.values()).map((ReportType type)->{return type.name();}).toList();
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(reportTypeService.getAllTypes(), HttpStatus.OK);
     }
     @GetMapping("/states")
     public ResponseEntity<?> getReportStates() {

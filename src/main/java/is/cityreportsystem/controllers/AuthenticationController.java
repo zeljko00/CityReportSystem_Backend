@@ -20,10 +20,8 @@ public class AuthenticationController {
         this.decoder = Base64.getDecoder();
         this.citizenService = citizenService;
     }
-    @GetMapping("login")
+    @GetMapping("/login")
     public LoginResponse login(@RequestHeader(HttpHeaders.AUTHORIZATION) String auth) {
-        System.out.println("AuthController (login) called!");
-
         //parsing credentials from Authorization header
         String[] tokens=auth.split(" ");
         byte[] data = tokens[1].getBytes();
@@ -32,20 +30,15 @@ public class AuthenticationController {
         tokens = credentials.split(":");
         String username = tokens[0];
         String password = tokens[1];
-
-        //calling auth service
+        // if credentials are valid user data and new jwt will be returned inside of LoginResponse,
+        // otherwise 401 will be returned
         return authenticationService.login(username,password);
     }
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public LoginResponse signup(@RequestBody CitizenDTO citizen){
+        System.out.println("Signup hit!");
         String password= citizen.getPassword();
-        System.out.println("AuthController (signup) called!");
-
-        //creating new citizen
         CitizenDTO cit=citizenService.createCitizen(citizen);
-
-        //if user cant be created authentication will fail and 401 will be returned
-        //otherwise, new JWT token will be returned to frontend
         return authenticationService.login(cit.getUsername(), password);
     }
 }

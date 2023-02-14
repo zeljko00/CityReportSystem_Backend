@@ -8,7 +8,7 @@ import is.cityreportsystem.services.JwtUserDetailsService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
+// service which provides information about user specified by username in received jwt
 @Service
 public class JwtUserDetailsServiceImpl implements JwtUserDetailsService {
 
@@ -20,17 +20,14 @@ public class JwtUserDetailsServiceImpl implements JwtUserDetailsService {
         this.modelMapper = modelMapper;
     }
 
-    // retrieve active user info by specified username
+    // retrieving info about active user specified by username extracted from jwt
     @Override
     public JwtUser loadUserByUsername(String username) throws UsernameNotFoundException {
-        Citizen citizen=citizenDAO.findCitizenByUsernameAndStatus(username,UserStatus.ACTIVE);
-        if(citizen!=null){
-            System.out.println("Found");
-            return modelMapper.map(citizen,JwtUser.class);
-        }
-        else{
-            System.out.println("User not found!");
+        System.out.println("Searching for username: "+username);
+        Citizen citizen = citizenDAO.findCitizenByUsername(username);
+        if (citizen != null)
+            return modelMapper.map(citizen, JwtUser.class);
+        else
             throw new UsernameNotFoundException(username);
-        }
     }
 }

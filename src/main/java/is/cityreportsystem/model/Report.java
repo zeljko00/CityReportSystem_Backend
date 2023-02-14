@@ -21,9 +21,15 @@ public class Report {
 	private ReportState state;
 	private double x;
 	private double y;
+	private String requiredAdditionalInfo;
+	private String providedAdditionalInfo;
+	private boolean requiredInfo;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator", referencedColumnName = "id", nullable = true)
 	private Citizen creator;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recepient", referencedColumnName = "id", nullable = true)
+	private CityService recepient;
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY)
 	private List<ReportImage> images;
 }

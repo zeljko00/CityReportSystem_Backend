@@ -16,8 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-// intercepts and checks each arrived request before calling controller's method
-// if request fails validation it is going to be rejected
+// Filters are executed before request are forwarded to servlet
+// OncePerRequest filters are executed only once per each request
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private JwtUserDetailsService jwtUserDetailsService;
     private JwtUtil jwtUtil;
@@ -30,42 +30,40 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("Filter hit!");
-        //getting header from request header
+        // Extracting authorization header from request
         String tokenHeader = request.getHeader("Authorization");
 
-        String username = null;
-        String token = null;
         //checks whether request contains jwt
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            //request contains token
             System.out.println("Token: "+tokenHeader);
-            token = tokenHeader.substring(7);
+            //getting rid of "Bearer " prefix
+            String token = tokenHeader.substring(7);
             try {
-                username = jwtUtil.getUsernameFromToken(token);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");              //logovati
-            } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");                //logovati
+                String username = jwtUtil.getUsernameFromToken(token);
+                if (username!=null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    //gathering information about user
+                    UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
+                    System.out.println("Username :"+username);
+                    // checking token validity
+                    if (jwtUtil.validateToken(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                        System.out.println("Received valid token!");
+                    }
+                    else
+                        System.out.println("Received invalid token");
+                }
             } catch(Exception e){
-                //logovati
+                e.printStackTrace();
             }
         }
         else
-            System.out.println("No token!");
-        if (null != username && SecurityContextHolder.getContext().getAuthentication() == null) {
-            System.out.println("Hit!");
-            UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken
-                        authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null,
-                        userDetails.getAuthorities());
-                authenticationToken.setDetails(new
-                        WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                System.out.println("Token valid!");
-            }
-        }
+            System.out.println("Request does not contain JWT token!");
+
+        System.out.println("Continue with filter chain!");
         filterChain.doFilter(request, response);
     }
 }

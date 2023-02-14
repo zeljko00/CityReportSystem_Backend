@@ -23,12 +23,12 @@ import org.springframework.web.filter.CorsFilter;
 import is.cityreportsystem.services.JwtUserDetailsService;
 
 @EnableWebSecurity   // includes our custom security configuration into spring security configuration
-@Configuration       // marks our class ass configuration class
+@Configuration       // marks our class as configuration class
 public class WebSecurityConfiguration{
 
     // service that enables retrieving user data based on specified username
     private final JwtUserDetailsService jwtUserDetailsService;
-    // security filter that validates received requests
+    // authorization filter that validates received requests
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
     // takes care of requests which failed validation
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
@@ -45,7 +45,7 @@ public class WebSecurityConfiguration{
             AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-    // service which encodes and encrypts password
+    // bean that provides password hashing and encoding
     @Bean
     public PasswordEncoder passwordEncoder() {      //service that provides password encryption and encoding
         return new BCryptPasswordEncoder();
@@ -69,13 +69,13 @@ public class WebSecurityConfiguration{
                 .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reports").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/reports/*").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/reports/additionalInfo/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/author/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reports/images/upload").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/images/*").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/reports/images/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
-//                        .antMatchers("/api/v1/auth/**").permitAll()
-
                 .anyRequest()
                 .authenticated();
         http.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);

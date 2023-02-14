@@ -1,11 +1,8 @@
 package is.cityreportsystem.security;
 
-import java.io.Serializable;
 import java.util.*;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -15,57 +12,56 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
-    public static final long JWT_VALIDITY = 5 * 60 * 60;
-    @Value("${jwt.secretKey}")         // reading secret key needed for digital signature of jwt, from application.properties file
-    private String secretKey;
+    public static final long JWT_VALIDITY = 5 * 60 * 60;    //validity period for jwt
+    @Value("${jwt.secretKey}")
+    private String secretKey; // reading secret key needed for digital signature of jwt, from application.properties file
 
-    //retrieve username from jwt
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+
+    public String getUsernameFromToken(String token) {      //retrieve username from jwt
+        return getAllClaimsFromToken(token).getSubject();
     }
 
-    //retrieve expiration date from jwt
-    public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
+    public Date getExpirationDateFromToken(String token) {       //retrieve expiration date from jwt
+        return getAllClaimsFromToken(token).getExpiration();
     }
 
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);            //applies function specified with claimsResolver Function object to provided argument (claims)
-    }
-
-    //retrieve all claims from jwt body (claim=property of JSON object representing jwt body),
-    // for retrieving any information from token we will need the secret key
-    // parseClaims will throw exception if token is changed, signed with different secret key...
+    //retrieve all claims from jwt body ( claim = property of JSON object representing jwt body),
+    // for retrieving any information from token secret key is required
+    // exception will be thrown if token is changed, signed with different secret key...
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        try {
+            Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+            return claims;
+        } catch (Exception e) {
+            System.out.println("Error while getting claims from jwt - jwt probably changed or signed with different key!");
+            e.printStackTrace();
+            throw e;
+        }
     }
 
-    //check if the token has expired
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+    private Boolean isTokenExpired(String token) {       //check if the token has expired
+        boolean expired=getExpirationDateFromToken(token).before(new Date());
+        if(expired)
+            System.out.println("Token expired!");
+        return  expired;
     }
 
-    //generate token for user
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-            claims.put("role",userDetails.getAuthorities().stream().toArray()[0]);
-        return doGenerateToken(claims, userDetails.getUsername());
-    }
-
-    //while creating the token -
+    //generating token for authenticated user
     //1. Define  claims of the token, like Issuer, Expiration, Subject, and the ID
     //2. Sign the JWT using the HS512 algorithm and secret key.
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+    public String generateToken(UserDetails userDetails) {
+        //adding user role to token claims
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userDetails.getAuthorities().stream().toArray()[0]);
+
+        return Jwts.builder().setClaims(claims).setSubject(userDetails.getUsername()).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_VALIDITY * 1000))
                 .signWith(SignatureAlgorithm.HS512, secretKey).compact();
     }
 
-    //validate token
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    //token is valid if it has valid username and it is not expired
+    public boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && userDetails.isAccountNonLocked());
     }
 }

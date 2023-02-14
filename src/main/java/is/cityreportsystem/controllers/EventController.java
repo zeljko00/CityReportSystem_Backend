@@ -32,21 +32,21 @@ public class EventController {
 
 	@GetMapping()
 	public ResponseEntity<?> getAllEvents() {
+		System.out.println("EventControler - events hit!");
 		List<EventDTO> result = eventService.getAllEvents();
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@GetMapping("/active")
 	public ResponseEntity<?> getActiveEvents() {
-		System.out.println("EventControler /active hit!");
+		System.out.println("EventControler - active events hit!");
 		List<EventDTO> result = eventService.getActiveEvents();
-		System.out.println(result.size());
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	@GetMapping(value= "/active/images/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
 
 	public ResponseEntity<byte[]> getImage(@PathVariable("id")long id) {
-		System.out.println("Images hit!");
+		System.out.println("EventControler - event images hit!");
 		byte[] image = eventImageService.getImageById(id);
 		if(image!=null)
 			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);

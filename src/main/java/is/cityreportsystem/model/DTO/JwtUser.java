@@ -1,6 +1,7 @@
 package is.cityreportsystem.model.DTO;
 
 import is.cityreportsystem.model.enums.UserRole;
+import is.cityreportsystem.model.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,12 +15,13 @@ import java.util.Collections;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-// info about user used in JWT authentication and authorization process
+// data about user that is used in jwt authentication and authorization process
 public class JwtUser implements UserDetails {
 
     private Long id;
     private String username;
     private String password;
+    private UserStatus status;
     private UserRole role;
 
     // returns user authorities ( we added role to authorities collection )
@@ -27,7 +29,7 @@ public class JwtUser implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
     }
-
+    // for more detailed security following methods should have different implementation
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -35,7 +37,7 @@ public class JwtUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !status.equals(UserStatus.BLOCKED);
     }
 
     @Override

@@ -5,6 +5,7 @@ import is.cityreportsystem.model.DTO.ReportRequest;
 import is.cityreportsystem.services.ReportImageService;
 import is.cityreportsystem.services.ReportService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,6 @@ public class ReportController {
 
     @PostMapping("/images/upload")
     public void uploadImage(Model model, @RequestParam("image") MultipartFile file,@RequestParam("identificator") String id) throws IOException {
-        System.out.println("Image upload hit! + id="+id);
         reportService.saveImage(file.getBytes(),id);
     }
     @PostMapping
@@ -39,11 +39,27 @@ public class ReportController {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> requireAddtionalInfo(@PathVariable("id") long id, @RequestBody String required){
+        boolean result=reportService.requireInfo(id,required.replace("\"",""));
+        if(result)
+            return new ResponseEntity<>(HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    @PutMapping("/additionalInfo/{id}")
+    public ResponseEntity<?> provideAddtionalInfo(@PathVariable("id") long id, @RequestBody String required){
+        boolean result=reportService.provideInfo(id,required.replace("\"",""));
+        if(result)
+            return new ResponseEntity<>(HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     @GetMapping("/author/{id}")
     public ResponseEntity<?> getReportsByAuthor(@PathVariable("id") long id){
         return new ResponseEntity<List<ReportDTO>>(reportService.getReportsByAuthor(id),HttpStatus.OK);
     }
-    @GetMapping("/images/{id}")
+    @GetMapping(path="/images/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<?> getReportImageById(@PathVariable("id") long id){
         byte[] result=reportImageService.getImageById(id);
         if(result!=null)
@@ -52,7 +68,7 @@ public class ReportController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     @DeleteMapping("/images/{id}")
-    public ResponseEntity<?> getReportImageById(@PathVariable("id") String id){
+    public ResponseEntity<?> deleteReportImageById(@PathVariable("id") String id){
         reportService.deleteImage(id);
             return new ResponseEntity<>(HttpStatus.OK);
     }

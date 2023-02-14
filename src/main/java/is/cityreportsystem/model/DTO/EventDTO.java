@@ -16,7 +16,7 @@ public class EventDTO {
 	private double y;
 	private String type;
 	private String date;
-	private short active;
+	private boolean active;
 	private CityOfficialDTO creator;
 	private List<ImageDTO> images;
 	private List<CoordinateDTO> coords;

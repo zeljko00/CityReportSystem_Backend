@@ -1,5 +1,6 @@
 package is.cityreportsystem.model;
 
+import is.cityreportsystem.model.enums.EventType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,11 +15,12 @@ public class Event {
 	private String title;
 	private String description;
 	private String info;
-	private double x;
+	private double x;		//nece trebati nakon implmentacije niza koordinata
 	private double y;
-	private String type;
+	@Enumerated(EnumType.STRING)
+	private EventType type;
 	private String date;
-	private short active;
+	private boolean active;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator", referencedColumnName = "id", nullable = false)
 	private CityOfficial creator;

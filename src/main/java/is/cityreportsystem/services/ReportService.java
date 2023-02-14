@@ -10,4 +10,6 @@ public interface ReportService {
     public ReportDTO createReport(ReportRequest report);
     List<ReportDTO> getReportsByAuthor(long id);
     void deleteImage(String id);
+    boolean requireInfo(long id, String required);
+    boolean provideInfo(long id, String required);
 }

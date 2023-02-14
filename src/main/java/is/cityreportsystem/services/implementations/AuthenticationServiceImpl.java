@@ -33,38 +33,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public LoginResponse login(String username, String password) {
-        System.out.println("Auth service hit!");
-        LoginResponse loginResponse = null;
-        try {
-            //authentication manager authenticates user based on received credentials -
-            //manager compares user data from jwt and data gathered by jwtUserDetailsService
-            //if authentication fails exception is thrown
-            Authentication authenticate = authenticationManager
-                    .authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    username, password
-                            )
-                    );
-            //authenticated user
-            JwtUser user = (JwtUser) authenticate.getPrincipal();
-            //based on role response will contain info about Citizen or CityOfficial
-            if(user.getRole().equals(UserRole.CITIZEN)){
-                LoginCitizenResponse loginCitizenResponse=modelMapper.map(citizenService.findCitizenById(user.getId()), LoginCitizenResponse.class);
-                // generating jwt
-                String token=jwtUtil.generateToken(user);
-                System.out.println(token);
-                loginCitizenResponse.setToken(token);
-                loginResponse=loginCitizenResponse;
-            }
-            else
-            {
-                LoginCitizenResponse loginCitizenResponse=modelMapper.map(cityOfficialService.getCityOfficialById(user.getId()), LoginCitizenResponse.class);
-                loginCitizenResponse.setToken(jwtUtil.generateToken(user));
-                loginResponse=loginCitizenResponse;
-            }
-        } catch (Exception ex) {
-            throw ex;               //logovati
+        System.out.println("Authentication service hit!");
+        LoginResponse loginResponse = new LoginResponse();
+        //authentication manager authenticates user based on received credentials -
+        //manager compares user data from jwt and data gathered by jwtUserDetailsService
+        //if authentication fails exception is thrown
+        try{
+        Authentication authenticate = authenticationManager
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                username, password
+                        )
+                );
+        //authenticated user
+
+        JwtUser user = (JwtUser) authenticate.getPrincipal();
+        //based on role response will contain info about Citizen or CityOfficial
+        if (user.getRole().equals(UserRole.CITIZEN))
+            loginResponse.setUser(citizenService.findCitizenById(user.getId()));
+        else
+            loginResponse.setUser(cityOfficialService.getCityOfficialById(user.getId()));
+        // generating new jwt
+        String token = jwtUtil.generateToken(user);
+        System.out.println("Generated token: " + token);
+        //user data and new jwt will be returned inside of LoginResponse,
+        loginResponse.setToken(token);
+        return loginResponse;}catch(Exception e){
+            e.printStackTrace();
+            throw e;
         }
-        return loginResponse;
     }
 }

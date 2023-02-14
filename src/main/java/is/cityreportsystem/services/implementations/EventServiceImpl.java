@@ -25,19 +25,16 @@ public class EventServiceImpl implements EventService {
     }
 
     public List<EventDTO> getActiveEvents() {
-        List<Event> events = eventDAO.findEventsByActive((short)1);
-        System.out.println("Service: "+events.size());
+        List<Event> events = eventDAO.findEventsByActive(true);
         List<EventDTO> result = new ArrayList<EventDTO>();
-
         for (Event e : events)
-                result.add(modelMapper.map(e, EventDTO.class));
+            result.add(modelMapper.map(e, EventDTO.class));
         return result;
     }
 
     public List<EventDTO> getAllEvents() {
         List<Event> events = eventDAO.findAll();
         List<EventDTO> result = new ArrayList<EventDTO>();
-
         for (Event e : events)
             result.add(modelMapper.map(e, EventDTO.class));
         return result;

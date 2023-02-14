@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface EventDAO extends  JpaRepository<Event, Long>{
-    public List<Event> findEventsByActive(short active);
+    public List<Event> findEventsByActive(boolean active);
 }

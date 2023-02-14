@@ -1,17 +1,12 @@
 package is.cityreportsystem.services.implementations;
 
 import is.cityreportsystem.DAO.ReportDAO;
-import is.cityreportsystem.model.Citizen;
+import is.cityreportsystem.model.*;
 import is.cityreportsystem.model.DTO.CitizenDTO;
 import is.cityreportsystem.model.DTO.ReportDTO;
 import is.cityreportsystem.model.DTO.ReportRequest;
-import is.cityreportsystem.model.Report;
-import is.cityreportsystem.model.ReportImage;
 import is.cityreportsystem.model.enums.ReportState;
-import is.cityreportsystem.services.CitizenService;
-import is.cityreportsystem.services.CityServiceService;
-import is.cityreportsystem.services.ReportImageService;
-import is.cityreportsystem.services.ReportService;
+import is.cityreportsystem.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,101 +30,144 @@ public class ReportServiceImpl implements ReportService {
     private final CitizenService citizenService;
     private final CityServiceService cityServiceService;
     private final ReportImageService reportImageService;
-    private HashMap<String, List<String>> uploadedImages=new HashMap<String,List<String>>();
+    private final ReportTypeService reportTypeService;
+    private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
 
-    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceService cityServiceService, ReportImageService reportImageService) {
+    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceService cityServiceService, ReportImageService reportImageService, ReportTypeService reportTypeService) {
         this.modelMapper = modelMapper;
         this.reportDAO = reportDAO;
         this.citizenService = citizenService;
         this.cityServiceService = cityServiceService;
         this.reportImageService = reportImageService;
+        this.reportTypeService = reportTypeService;
     }
 
-    public boolean saveImage(byte[] data, String id){
-        String[] tokens=id.split("--");
-        try{
-            int ident=Integer.parseInt(tokens[0]);
-        if(!uploadedImages.containsKey(Integer.toString(ident)))
-            uploadedImages.put(Integer.toString(ident),new ArrayList<String>());
-        String imageName=id;
-        uploadedImages.get(Integer.toString(ident)).add(imageName);
-
-        String path=imagesRepo+File.separator+imageName;
-
-            File file=new File(path);
-            file.createNewFile();
-            Files.write(Paths.get(path), data);
-            System.out.println("added: "+ident);
-        return true;
-        }catch(Exception e){
+    public boolean saveImage(byte[] data, String id) {
+        System.out.println(id);
+        try {
+            String[] tokens = id.split("--");
+            String random = tokens[0];
+            synchronized (uploadedImages) {
+                if (!uploadedImages.containsKey(random))
+                    uploadedImages.put(random, new ArrayList<Tuple>());
+                else
+                    System.out.println("already contains");
+                Tuple temp = new Tuple();
+                System.out.println(tokens[1]);
+                temp.setId(tokens[1]);
+                temp.setData(data);
+                uploadedImages.get(random).add(temp);
+            }
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
-    public void deleteImage(String id){
-        String[] tokens=id.split("--");
-        try{
-            int ident=Integer.parseInt(tokens[0]);
-            if(uploadedImages.containsKey(Integer.toString(ident))){
-            String imageName=id;
-            uploadedImages.get(Integer.toString(ident)).remove(imageName);
 
-            String path=imagesRepo+File.separator+imageName;
-
-            File file=new File(path);
-            file.delete();}
-
-        }catch(Exception e){
+    public void deleteImage(String id) {
+        try {
+            String[] tokens = id.split("--");
+            String random = tokens[0];
+            synchronized (uploadedImages) {
+                List<Tuple> imgs = uploadedImages.get(random);
+                Tuple toDelete = null;
+                for (Tuple t : imgs)
+                    if (t.getId().equals(tokens[1]))
+                        toDelete = t;
+                System.out.println("deleted " + toDelete.getId());
+                imgs.remove(toDelete);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
-    public ReportDTO createReport(ReportRequest report){
-        Report reportEntity=modelMapper.map(report, Report.class);
-        DateFormat df=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
+    public ReportDTO createReport(ReportRequest report) {
+        Report reportEntity = modelMapper.map(report, Report.class);
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         reportEntity.setDate(df.format(new Date()));
         reportEntity.setState(ReportState.RECEIVED);
-        long tempId=reportEntity.getId();
-        if(report.getCreator()>=0){
-            CitizenDTO citizen=citizenService.findCitizenById(report.getCreator());
+        reportEntity.setId(-1l);
+        reportEntity.setRequiredInfo(false);
+        try {
+            ReportType type = reportTypeService.getByName(report.getType());
+
+            if (type != null) {
+                CityService cityService = type.getResponsibleService();
+                if (cityService != null)
+                    reportEntity.setRecepient(cityService);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        long tempId = report.getId();
+        System.out.println(tempId);
+        System.out.println("creator " + report.getCreator());
+        if (report.getCreator() > 0) {
+            CitizenDTO citizen = citizenService.findCitizenById(report.getCreator());
             reportEntity.setCreator(modelMapper.map(citizen, Citizen.class));
         }
-        Report result=reportDAO.save(reportEntity);
-//        System.out.println(tempId);
-//        System.out.println(uploadedImages.size());
-//        for(Map.Entry<String,List<String>> entry: uploadedImages.entrySet()){
-//            System.out.println(entry.getKey());
-//            for(String s: entry.getValue())
-//                System.out.print(s+" ");
-//            System.out.println("=======================================");
-//        }
-//       System.out.println(uploadedImages.get(tempId));
-        if(uploadedImages.get(Long.toString(tempId))!=null){
-            System.out.println("Iamges exist!");
-            List<String> images=uploadedImages.get(Long.toString(tempId));
-            uploadedImages.remove(Long.toString(tempId));
-            int count=1;
-            for(String s: images){
-                ReportImage reportImage=new ReportImage();
-                reportImage.setReport(result);
-                reportImage.setName(result.getId()+"_"+count+++".jpg");
-                File temp=new File(imagesRepo+File.separator+s);
-                temp.renameTo(new File(imagesRepo+File.separator+reportImage.getName()));
-                reportImageService.addImage(reportImage);
-            }
+        Report result = reportDAO.save(reportEntity);
+        synchronized (uploadedImages) {
+            if (uploadedImages.get(Long.toString(tempId)) != null) {
+                System.out.println("Images exist!");
+                List<Tuple> images = uploadedImages.get(Long.toString(tempId));
+                uploadedImages.remove(Long.toString(tempId));
+                int count = 1;
+                for (Tuple t : images) {
+                    ReportImage reportImage = new ReportImage();
+                    reportImage.setReport(result);
+                    reportImage.setName(result.getId() + "_" + count++ + ".jpg");
+                    reportImageService.addImage(reportImage);
+                    String path = imagesRepo + File.separator + reportImage.getName();
+                    File file = new File(path);
+                    try {
+                        file.createNewFile();
+                        Files.write(Paths.get(path), t.getData());
+                        System.out.println("saved");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else
+                System.out.println("no images");
         }
-        return modelMapper.map(result,ReportDTO.class);
+
+        return modelMapper.map(result, ReportDTO.class);
     }
 
-    public List<ReportDTO> getReportsByAuthor(long id){
-        CitizenDTO citizenDTO=citizenService.findCitizenById(id);
-        Citizen citizen=modelMapper.map(citizenDTO,Citizen.class);
-        List<Report> reports=reportDAO.findReportsByCreator(citizen);
-        List<ReportDTO> result=new ArrayList<ReportDTO>();
-        if(reports!=null)
-            for(Report report: reports)
-                result.add(modelMapper.map(report,ReportDTO.class));
-        System.out.println("Broj prijava:"+result.size());
+    public List<ReportDTO> getReportsByAuthor(long id) {
+        CitizenDTO citizenDTO = citizenService.findCitizenById(id);
+        Citizen citizen = modelMapper.map(citizenDTO, Citizen.class);
+        List<Report> reports = reportDAO.findReportsByCreator(citizen);
+        List<ReportDTO> result = new ArrayList<ReportDTO>();
+        if (reports != null)
+            for (Report report : reports)
+                result.add(modelMapper.map(report, ReportDTO.class));
         return result;
+    }
+
+    public boolean requireInfo(long id, String required) {
+        try {
+            Report report = reportDAO.findById(id).get();
+            report.setRequiredAdditionalInfo(required);
+            report.setRequiredInfo(true);
+            reportDAO.save(report);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public boolean provideInfo(long id, String required) {
+        try {
+            Report report = reportDAO.findById(id).get();
+            report.setProvidedAdditionalInfo(required);
+            report.setRequiredInfo(false);
+            reportDAO.save(report);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

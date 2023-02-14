@@ -24,7 +24,7 @@ public class Citizen {
 	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 	@OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-	private List<Report> myReports; 			// = new ArrayList<Report>();
+	private List<Report> myReports;
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 }

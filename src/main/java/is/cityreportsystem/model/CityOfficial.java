@@ -16,4 +16,5 @@ public class CityOfficial extends  Citizen{
 	private CityService department;
 	@OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
 	private List<Event> myEvents;
+
 }
