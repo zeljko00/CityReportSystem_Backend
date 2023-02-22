@@ -2,14 +2,18 @@ package is.cityreportsystem.services.implementations;
 
 import is.cityreportsystem.DAO.EventDAO;
 import is.cityreportsystem.model.DTO.EventDTO;
+import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.model.Event;
 import is.cityreportsystem.services.EventService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,14 +36,24 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    public List<EventDTO> getAllEvents() {
-        List<Event> events = eventDAO.findAll();
-        List<EventDTO> result = new ArrayList<EventDTO>();
-        for (Event e : events)
-            result.add(modelMapper.map(e, EventDTO.class));
+    public PageDTO<EventDTO> getAllEvents(Pageable pageable) {
+        Page<Event> page=eventDAO.findAll(pageable);
+        PageDTO<EventDTO> result=new PageDTO<>();
+        result.setPages(page.getTotalElements());
+        result.setData(page.getContent().stream().map(this::map).collect(Collectors.toList()));
         return result;
     }
+    private EventDTO map(Event e){
+        return modelMapper.map(e,EventDTO.class);
+    }
 
+    public int getActiveEventsByCreatorId(long id) {
+        return eventDAO.getActiveEventsByCreatorId(id);
+    }
+
+    public int getEventsByCreatorId(long id) {
+        return eventDAO.getEventsByCreatorId(id);
+    }
 //    public Event getEventById(int id) {
 //        return eventRepository.getById(id);
 //    }

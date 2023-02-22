@@ -11,6 +11,7 @@ import java.util.List;
 public class CityOfficial extends  Citizen{
 	private String position;
 	private String education;
+	private int solvedReports;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="department", referencedColumnName = "id")
 	private CityService department;

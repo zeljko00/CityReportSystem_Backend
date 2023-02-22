@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import is.cityreportsystem.model.DTO.EventDTO;
+import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.services.EventImageService;
 import is.cityreportsystem.services.EventService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +33,11 @@ public class EventController {
 		this.eventImageService = eventImageService;
 	}
 
-	@GetMapping()
-	public ResponseEntity<?> getAllEvents() {
-		System.out.println("EventControler - events hit!");
-		List<EventDTO> result = eventService.getAllEvents();
+	@GetMapping("/{page}/{size}")
+	public ResponseEntity<?> getAllEvents(@PathVariable("page") int page, @PathVariable("size") int size) {
+		Pageable pageable= PageRequest.of(page,size);
+		System.out.println("Page - "+page);
+		PageDTO result = eventService.getAllEvents(pageable);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 

@@ -3,6 +3,7 @@ package is.cityreportsystem.DAO;
 import is.cityreportsystem.model.Citizen;
 import is.cityreportsystem.model.Report;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 

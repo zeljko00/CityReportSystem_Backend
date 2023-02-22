@@ -17,4 +17,7 @@ public class CityOfficialDTO extends CitizenDTO {
 	private String position;
 	private String education;
 	private CityServiceDTO department;
+	private int createdEventsNum;
+	private int activeEventsNum;
+	private int solvedReportsNum;
 }
