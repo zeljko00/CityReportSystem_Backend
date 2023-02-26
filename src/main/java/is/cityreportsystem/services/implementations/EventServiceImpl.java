@@ -1,7 +1,10 @@
 package is.cityreportsystem.services.implementations;
 
+import is.cityreportsystem.DAO.CityOfficialDAO;
 import is.cityreportsystem.DAO.EventDAO;
+import is.cityreportsystem.model.CityOfficial;
 import is.cityreportsystem.model.DTO.EventDTO;
+import is.cityreportsystem.model.DTO.EventRequest;
 import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.model.Event;
 import is.cityreportsystem.services.EventService;
@@ -11,7 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,11 +26,14 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     private EventDAO eventDAO;
+    private final CityOfficialDAO cityOfficialDAO;
     private ModelMapper modelMapper;
+    private DateFormat dateFormat=new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
 
-    public EventServiceImpl(EventDAO eventDAO, ModelMapper modelMapper) {
+    public EventServiceImpl(EventDAO eventDAO, CityOfficialDAO cityOfficialDAO, ModelMapper modelMapper) {
         super();
         this.eventDAO = eventDAO;
+        this.cityOfficialDAO = cityOfficialDAO;
         this.modelMapper = modelMapper;
     }
 
@@ -36,19 +45,26 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    public PageDTO<EventDTO> getAllEvents(Pageable pageable) {
-        Page<Event> page=eventDAO.findAll(pageable);
-        PageDTO<EventDTO> result=new PageDTO<>();
+    public PageDTO<EventDTO> getAllEvents(Pageable pageable,String search) {
+        Page<Event> page = null;
+        if("-".equals(search))
+            page=eventDAO.findAll(pageable);
+        else
+            page=eventDAO.findEventsByTitleContains(pageable,search);
+        PageDTO<EventDTO> result = new PageDTO<>();
         result.setPages(page.getTotalElements());
         result.setData(page.getContent().stream().map(this::map).collect(Collectors.toList()));
         return result;
     }
-    private EventDTO map(Event e){
-        return modelMapper.map(e,EventDTO.class);
+
+    private EventDTO map(Event e) {
+        return modelMapper.map(e, EventDTO.class);
     }
 
     public int getActiveEventsByCreatorId(long id) {
-        return eventDAO.getActiveEventsByCreatorId(id);
+        int temp=eventDAO.getActiveEventsByCreatorId(id);
+        System.out.println(temp);
+        return temp;
     }
 
     public int getEventsByCreatorId(long id) {
@@ -58,17 +74,26 @@ public class EventServiceImpl implements EventService {
 //        return eventRepository.getById(id);
 //    }
 //
-//    public int addEvent(EventRequest e) {
-//        Event event=modelMapper.map(e, Event.class);
-//        DateFormat form=new SimpleDateFormat("dd.MM.yyyy HH:mm");
-//        event.setDate(form.format(new Date()));
-//        event.setActive((short)1);
-//        event.setEventCreator(modelMapper.map(cityOfficial.getCityOfficialById(e.getCreator()),CityOfficial.class));
-//        int id = eventRepository.saveAndFlush(event).getId();
-//        return id;
-//    }
+    public EventDTO createEvent(EventRequest e) {
 
-//	public boolean updateEvent(int id, Event e) {
+        try{
+            CityOfficial cityOfficial=cityOfficialDAO.findById(e.getCreator()).get();
+            Event event=modelMapper.map(e, Event.class);
+            int random=e.getRandom();
+            event.setCreator(cityOfficial);
+            event.setActive(true);
+            event.setDate(dateFormat.format(new Date()));
+            EventDTO result=modelMapper.map(eventDAO.saveAndFlush(event),EventDTO.class);
+            if(result.getImages()==null)
+                result.setImages(new ArrayList<>());
+            return result;
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    //	public boolean updateEvent(int id, Event e) {
 //		Event event = eventRepository.getById(id);
 //		if (event != null) {
 //			event.setInfo(e.getInfo());
@@ -80,15 +105,34 @@ public class EventServiceImpl implements EventService {
 //	}
 //
 //
-//	public boolean deactivateEvent(int id) {
-//		Event event = eventRepository.getById(id);
-//		if (event != null) {
-//			event.setActive((short)0);;
-//			eventRepository.saveAndFlush(event);
-//			return true;
-//		} else
-//			return false;
-//	}
+    public boolean deactivateEvent(long executorId, long id) {
+        try {
+            Event event = eventDAO.findById(id).get();
+            CityOfficial cityOfficial = cityOfficialDAO.findById(executorId).get();
+            if (event.getCreator().getId() == cityOfficial.getId()) {
+                event.setActive(false);
+                eventDAO.saveAndFlush(event);
+                return true;
+            } else
+                return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public boolean activateEvent(long executorId, long id) {
+        try {
+            Event event = eventDAO.findById(id).get();
+            CityOfficial cityOfficial = cityOfficialDAO.findById(executorId).get();
+            if (event.getCreator().getId() == cityOfficial.getId()) {
+                event.setActive(true);
+                eventDAO.saveAndFlush(event);
+                return true;
+            } else
+                return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
 //    public boolean updateEvent(int id, Event e,int executorId) {
 //        Event event = eventRepository.getById(id);

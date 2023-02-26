@@ -13,6 +13,7 @@ import java.util.List;
 public interface EventDAO extends  JpaRepository<Event, Long>{
     List<Event> findEventsByActive(boolean active);
     Page<Event> findAll(Pageable pageable);
+    Page<Event> findEventsByTitleContains(Pageable pageable,String search);
     @Query("SELECT COUNT(e.id) FROM Event e WHERE e.creator.id=:id")
     int getEventsByCreatorId(long id);
     @Query("SELECT COUNT(e.id) FROM Event e WHERE e.creator.id=:id AND e.active=true")
