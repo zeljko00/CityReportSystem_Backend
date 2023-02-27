@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 @Transactional
 @Service
 public class EventImageServiceImpl implements EventImageService {
-    @Value("${images.repository}")
+    @Value("${events.images.repository}")
     private String imagesRepo;
     private EventImageDAO eventImageDAO;
 
@@ -33,5 +33,8 @@ public class EventImageServiceImpl implements EventImageService {
             e.printStackTrace();
             return null;
         }
+    }
+    public EventImage addImage(EventImage eventImage){
+        return eventImageDAO.save(eventImage);
     }
 }

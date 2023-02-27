@@ -8,6 +8,9 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class CityServiceServiceImpl implements CityServiceService {
@@ -28,5 +31,8 @@ public class CityServiceServiceImpl implements CityServiceService {
             CityServiceDTO cityServiceDTO=modelMapper.map(cityService,CityServiceDTO.class);
             return cityServiceDTO;
         }
+    }
+    public List<String> getCityServiceNames(){
+        return cityServiceDAO.findAll().stream().map((CityService ss) -> {return ss.getName();}).collect(Collectors.toList());
     }
 }

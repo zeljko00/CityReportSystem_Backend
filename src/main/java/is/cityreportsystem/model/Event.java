@@ -3,6 +3,7 @@ package is.cityreportsystem.model;
 import is.cityreportsystem.model.enums.EventType;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Type;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class Event {
 	private double y;
 	@Enumerated(EnumType.STRING)
 	private EventType type;
+//	@Column(columnDefinition ="DATETIME")
 	private String date;
 	private boolean active;
 	@ManyToOne(fetch = FetchType.LAZY)

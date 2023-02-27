@@ -22,7 +22,7 @@ import java.util.*;
 @Service
 @Transactional
 public class ReportServiceImpl implements ReportService {
-    @Value("${images.repository}")
+    @Value("${reports.images.repository}")
     private String imagesRepo;
     private final ModelMapper modelMapper;
 

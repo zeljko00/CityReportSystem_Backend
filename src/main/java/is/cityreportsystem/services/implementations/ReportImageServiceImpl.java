@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 @Service
 public class ReportImageServiceImpl implements ReportImageService {
 
-    @Value("${images.repository}")
+    @Value("${reports.images.repository}")
     private String imagesRepo;
     ReportImageDAO reportImageDAO;
 

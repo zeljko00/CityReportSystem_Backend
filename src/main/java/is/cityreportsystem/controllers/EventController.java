@@ -1,30 +1,32 @@
 package is.cityreportsystem.controllers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import is.cityreportsystem.model.DTO.EventDTO;
 import is.cityreportsystem.model.DTO.EventRequest;
 import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.services.EventImageService;
 import is.cityreportsystem.services.EventService;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 @RestController
 @RequestMapping("/events")
 public class EventController {
 
-    private EventService eventService;
     private final EventImageService eventImageService;
+    private final EventService eventService;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public EventController(EventService eventService, EventImageService eventImageService) {
         super();
@@ -32,11 +34,15 @@ public class EventController {
         this.eventImageService = eventImageService;
     }
 
-    @GetMapping("/{page}/{size}/{search}")
-    public ResponseEntity<?> getAllEvents(@PathVariable("page") int page, @PathVariable("size") int size, @PathVariable("search") String search) {
+    @GetMapping("/{typeFilter}/{stateFilter}/{departmentFilter}/{page}/{size}/{search}/{sort}/{dir}")
+    public ResponseEntity<?> getAllEvents(@PathVariable("typeFilter") String typeFilter, @PathVariable("stateFilter") String stateFilter, @PathVariable("departmentFilter") String departmentFilter, @PathVariable("page") int page, @PathVariable("size") int size, @PathVariable("search") String search, @PathVariable("dir") String direction, @PathVariable("sort") String sort) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("Page - " + page);
-        PageDTO result = eventService.getAllEvents(pageable, search);
+        if ("desc".equals(direction))
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        else
+            pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        System.out.println("Page - " + page + " filter: " + typeFilter + " - " + stateFilter + " - " + departmentFilter+" sort - "+sort+" "+direction);
+        PageDTO result = eventService.getAllEvents(pageable, search, typeFilter, stateFilter, departmentFilter);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -74,31 +80,48 @@ public class EventController {
     @PostMapping()
     public ResponseEntity<?> addEvent(@RequestBody EventRequest event) {
         EventDTO eventDTO = eventService.createEvent(event);
-        if (eventDTO==null) {
+        if (eventDTO == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         } else {
             return new ResponseEntity<>(eventDTO, HttpStatus.OK);
         }
     }
 
-    //
-//	@CrossOrigin
-//	@PutMapping("/{id}")
-//	public ResponseEntity<?> updateEvent(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-//			@RequestBody Event event, @PathVariable("id") int id) {
-//		int flag = checkCityOfficialCredentials(authorization);
-//		if (flag == -1) {
-//			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//		} else {
-//			boolean flag2 = eventService.updateEvent(id, event,flag);
-//			if (flag2)
-//				return new ResponseEntity<>(HttpStatus.OK);
-//			else
-//				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//		}
-//
-//	}
-//
+    @PostMapping("/images/upload")
+    public void uploadImage(Model model, @RequestParam("image") MultipartFile file, @RequestParam("identificator") String id) throws IOException {
+        eventService.saveImage(file.getBytes(), id);
+    }
+
+    @PostMapping("/images/upload/{id}")
+    public void updateImages(Model model, @RequestParam("image") MultipartFile file, @PathVariable("id") String id) throws IOException {
+        eventService.updateImage(file.getBytes(), id);
+    }
+
+    @DeleteMapping("/images/{id}")
+    public ResponseEntity<?> deleteReportImageById(@PathVariable("id") String id) {
+        eventService.deleteImage(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/images/update/{id}")
+    public ResponseEntity<?> deleteUpdatedImageById(@PathVariable("id") String id) {
+        eventService.deleteUpdatedImage(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<?> updateEvent(@PathVariable("id") long id,
+                                         @RequestBody EventDTO event) {
+        EventDTO result = eventService.updateEvent(id, event);
+        System.out.println("controler:" + result.getImages().size());
+        if (result != null)
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+
+    }
+
     @DeleteMapping("/deactivate/{creator}/{id}")
     public ResponseEntity<?> deactivateEvent(@PathVariable("creator") long creator, @PathVariable("id") long id) {
         boolean flag2 = eventService.deactivateEvent(creator, id);
