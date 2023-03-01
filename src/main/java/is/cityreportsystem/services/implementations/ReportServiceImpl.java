@@ -1,14 +1,15 @@
 package is.cityreportsystem.services.implementations;
 
+import is.cityreportsystem.DAO.CityOfficialDAO;
 import is.cityreportsystem.DAO.ReportDAO;
 import is.cityreportsystem.model.*;
-import is.cityreportsystem.model.DTO.CitizenDTO;
-import is.cityreportsystem.model.DTO.ReportDTO;
-import is.cityreportsystem.model.DTO.ReportRequest;
+import is.cityreportsystem.model.DTO.*;
 import is.cityreportsystem.model.enums.ReportState;
 import is.cityreportsystem.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,15 +31,17 @@ public class ReportServiceImpl implements ReportService {
     private final ReportDAO reportDAO;
     private final CitizenService citizenService;
     private final CityServiceService cityServiceService;
+    private final CityOfficialDAO cityOfficialDAO;
     private final ReportImageService reportImageService;
     private final ReportTypeService reportTypeService;
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
 
-    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceService cityServiceService, ReportImageService reportImageService, ReportTypeService reportTypeService) {
+    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceService cityServiceService, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService) {
         this.modelMapper = modelMapper;
         this.reportDAO = reportDAO;
         this.citizenService = citizenService;
         this.cityServiceService = cityServiceService;
+        this.cityOfficialDAO = cityOfficialDAO;
         this.reportImageService = reportImageService;
         this.reportTypeService = reportTypeService;
     }
@@ -169,5 +173,59 @@ public class ReportServiceImpl implements ReportService {
         } catch (Exception e) {
             return false;
         }
+    }
+    public   PageDTO<ReportDTO> getReports(long userId,long departmentId,Pageable pageable, String search, String typeFilter, String stateFilter){
+        PageDTO<ReportDTO> result = new PageDTO<>();
+        try{
+            CityOfficial user=cityOfficialDAO.findById(userId).get();
+            if(user==null)
+                throw new Exception();
+            CityServiceDTO cityService=cityServiceService.getCityServiceById(departmentId);
+            if(cityService==null)
+                throw  new Exception();
+            if(user.getDepartment().getId()!=departmentId)
+                throw new Exception();
+            List<String> types=cityService.getReportTypes();
+            Page<Report> page=null;
+            if("-".equals(search)){
+                if("all".equals(typeFilter)){
+                    if("all".equals(stateFilter)){
+                        page=reportDAO.findReportsByTypeIn(pageable,types);
+                    }else{
+                        page=reportDAO.findReportsByTypeInAndState(pageable,types,ReportState.valueOf(stateFilter));
+                    }
+                }else{
+                    if("all".equals(stateFilter)){
+                        page=reportDAO.findReportsByType(pageable,typeFilter);
+                    }else{
+                        page=reportDAO.findReportsByTypeAndState(pageable,typeFilter,ReportState.valueOf(stateFilter));
+                    }
+                }
+            }else{
+                if("all".equals(typeFilter)){
+                    if("all".equals(stateFilter)){
+                        page=reportDAO.findReportsByTypeInAndTitleContainsIgnoreCase(pageable,types,search);
+                    }else{
+                        page=reportDAO.findReportsByTypeInAndStateAndTitleContainsIgnoreCase(pageable,types,ReportState.valueOf(stateFilter),search);
+                    }
+                }else{
+                    if("all".equals(stateFilter)){
+                        page=reportDAO.findReportsByTypeAndTitleContainsIgnoreCase(pageable,typeFilter,search);
+                    }else{
+                        page=reportDAO.findReportsByTypeAndStateAndTitleContainsIgnoreCase(pageable,typeFilter,ReportState.valueOf(stateFilter),search);
+                    }
+                }
+            }
+            result.setPages(page.getTotalElements());
+            result.setData(page.getContent().
+                    stream().
+                    map( r -> modelMapper.map(r,ReportDTO.class)).
+                    collect(Collectors.toList()));
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+        return result;
     }
 }

@@ -29,6 +29,7 @@ public class CityServiceServiceImpl implements CityServiceService {
             return null;
         else{
             CityServiceDTO cityServiceDTO=modelMapper.map(cityService,CityServiceDTO.class);
+            cityServiceDTO.setReportTypes(cityService.getReportTypes().stream().map(t -> t.getName()).collect(Collectors.toList()));
             return cityServiceDTO;
         }
     }

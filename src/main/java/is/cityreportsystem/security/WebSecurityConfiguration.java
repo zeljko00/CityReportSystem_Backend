@@ -71,6 +71,7 @@ public class WebSecurityConfiguration{
                 .requestMatchers(HttpMethod.PUT, "/events/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reports").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/reports/*").permitAll()

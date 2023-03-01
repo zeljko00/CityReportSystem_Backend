@@ -1,9 +1,13 @@
 package is.cityreportsystem.controllers;
 
+import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.model.DTO.ReportDTO;
 import is.cityreportsystem.model.DTO.ReportRequest;
 import is.cityreportsystem.services.ReportImageService;
 import is.cityreportsystem.services.ReportService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -71,6 +76,19 @@ public class ReportController {
     public ResponseEntity<?> deleteReportImageById(@PathVariable("id") String id){
         reportService.deleteImage(id);
             return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping("/{userId}/{departmentId}/{typeFilter}/{stateFilter}/{page}/{size}/{search}/{sort}/{dir}")
+    public ResponseEntity<?> getReports(@PathVariable("userId") long userId, @PathVariable("departmentId") long departmentId,@PathVariable("typeFilter") String typeFilter, @PathVariable("stateFilter") String stateFilter, @PathVariable("page") int page, @PathVariable("size") int size, @PathVariable("search") String search, @PathVariable("dir") String direction, @PathVariable("sort") String sort){
+        Pageable pageable = PageRequest.of(page, size);
+        if ("desc".equals(direction))
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        else
+            pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        PageDTO result = reportService.getReports(userId,departmentId,pageable, search, typeFilter, stateFilter);
+        if(result!=null)
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
 }
