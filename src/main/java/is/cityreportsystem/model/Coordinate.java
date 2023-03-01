@@ -9,6 +9,7 @@ public class Coordinate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private int area;
     private double x;
     private double y;
     @ManyToOne(fetch= FetchType.LAZY)

@@ -2,6 +2,7 @@ package is.cityreportsystem.controllers;
 
 import is.cityreportsystem.model.DTO.EventDTO;
 import is.cityreportsystem.model.DTO.EventRequest;
+import is.cityreportsystem.model.DTO.EventUpdateRequest;
 import is.cityreportsystem.model.DTO.PageDTO;
 import is.cityreportsystem.services.EventImageService;
 import is.cityreportsystem.services.EventService;

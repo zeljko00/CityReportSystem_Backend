@@ -19,5 +19,5 @@ public class EventDTO {
 	private boolean active;
 	private CityOfficialDTO creator;
 	private List<ImageDTO> images;
-	private List<CoordinateDTO> coords;
+	private List<List<CoordinateDTO>> coords;
 }

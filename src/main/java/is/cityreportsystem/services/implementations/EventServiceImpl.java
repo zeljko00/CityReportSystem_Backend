@@ -1,15 +1,10 @@
 package is.cityreportsystem.services.implementations;
 
 import is.cityreportsystem.DAO.CityOfficialDAO;
+import is.cityreportsystem.DAO.CoordinateDAO;
 import is.cityreportsystem.DAO.EventDAO;
-import is.cityreportsystem.model.CityOfficial;
-import is.cityreportsystem.model.DTO.EventDTO;
-import is.cityreportsystem.model.DTO.EventRequest;
-import is.cityreportsystem.model.DTO.ImageDTO;
-import is.cityreportsystem.model.DTO.PageDTO;
-import is.cityreportsystem.model.Event;
-import is.cityreportsystem.model.EventImage;
-import is.cityreportsystem.model.Tuple;
+import is.cityreportsystem.model.*;
+import is.cityreportsystem.model.DTO.*;
 import is.cityreportsystem.model.enums.EventType;
 import is.cityreportsystem.services.EventImageService;
 import is.cityreportsystem.services.EventService;
@@ -25,10 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,17 +31,19 @@ public class EventServiceImpl implements EventService {
     private EventDAO eventDAO;
     private final CityOfficialDAO cityOfficialDAO;
     private final EventImageService eventImageService;
+    private final CoordinateDAO coordinateDAO;
     private ModelMapper modelMapper;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private DateFormat dateFormatLocale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
     private HashMap<String, List<Tuple>> updatedImages = new HashMap<String, List<Tuple>>();
 
-    public EventServiceImpl(EventDAO eventDAO, CityOfficialDAO cityOfficialDAO, EventImageService eventImageService, ModelMapper modelMapper) {
+    public EventServiceImpl(EventDAO eventDAO, CityOfficialDAO cityOfficialDAO, EventImageService eventImageService, CoordinateDAO coordinateDAO, ModelMapper modelMapper) {
         super();
         this.eventDAO = eventDAO;
         this.cityOfficialDAO = cityOfficialDAO;
         this.eventImageService = eventImageService;
+        this.coordinateDAO = coordinateDAO;
         this.modelMapper = modelMapper;
     }
 
@@ -223,15 +217,21 @@ public class EventServiceImpl implements EventService {
     }
 
     private EventDTO map(Event e) {
+        List<Coordinate> list= e.getCoords();
+        e.setCoords(null);
         EventDTO temp = modelMapper.map(e, EventDTO.class);
+
+        Map<Integer,List<CoordinateDTO>> collection=new HashMap<>();
+        list.stream().forEach(c -> {
+            if(collection.containsKey(c.getArea())==false)
+                collection.put(c.getArea(),new ArrayList<>());
+            collection.get(c.getArea()).add(modelMapper.map(c,CoordinateDTO.class));
+        });
+        temp.setCoords(new ArrayList<>(collection.values()));
+        System.out.println("areas: "+temp.getCoords().size());
         try {
-//            System.out.println("=============================");
-//            System.out.println("1."+temp.getDate());
-//            System.out.println("2."+dateFormat.parse(temp.getDate()));
-//            System.out.println("3."+dateFormatLocale.format(dateFormat.parse(temp.getDate())));
             temp.setDate(dateFormatLocale.format(dateFormat.parse(temp.getDate())));
         } catch (Exception ex) {
-//            ex.printStackTrace();
         }
         return temp;
     }
@@ -329,13 +329,18 @@ public class EventServiceImpl implements EventService {
     public EventDTO createEvent(EventRequest e) {
 
         try {
+            System.out.println("event request coords: "+e.getCoords().size());
             CityOfficial cityOfficial = cityOfficialDAO.findById(e.getCreator()).get();
             Event event = modelMapper.map(e, Event.class);
+            List<Coordinate> list=event.getCoords();
             int random = e.getRandom();
             event.setCreator(cityOfficial);
             event.setActive(true);
             event.setDate(dateFormat.format(new Date()));
             Event eventEntity = eventDAO.saveAndFlush(event);
+            list.stream().forEach(c->{c.setEvent(eventEntity);
+            coordinateDAO.saveAndFlush(c);}
+            );
             EventDTO result = map(eventEntity);
             result.setImages(new ArrayList<>());
             synchronized (uploadedImages) {
@@ -376,13 +381,26 @@ public class EventServiceImpl implements EventService {
     public EventDTO updateEvent(long executorId, EventDTO event) {
         try {
             Event eventEntity = eventDAO.findById(event.getId()).get();
+            if(event.getCoords()!=null && event.getCoords().size()>0){
+                System.out.println("changing location");
+                coordinateDAO.deleteCoordinatesByEventId(eventEntity.getId());
+                event.getCoords().stream().forEach(area->{
+                    area.forEach(c -> {Coordinate cc=modelMapper.map(c,Coordinate.class);
+                        cc.setEvent(eventEntity);
+                        coordinateDAO.saveAndFlush(cc);});
+
+                });
+            }
+            else
+                System.out.println("not changing location");
+
             if (event.getCreator().getId() != executorId)
                 return null;
             eventEntity.setInfo(event.getInfo());
             eventEntity.setDescription(event.getDescription());
             eventEntity.setX(event.getX());
             eventEntity.setY(event.getY());
-            eventDAO.saveAndFlush(eventEntity);
+            Event resultEntity=eventDAO.saveAndFlush(eventEntity);
             if (event.getImages() == null)
                 event.setImages(new ArrayList<>());
             synchronized (updatedImages) {
@@ -416,6 +434,7 @@ public class EventServiceImpl implements EventService {
             }
             for (ImageDTO i : event.getImages())
                 System.out.println(i.getId());
+
             return event;
         } catch (Exception e) {
             e.printStackTrace();
