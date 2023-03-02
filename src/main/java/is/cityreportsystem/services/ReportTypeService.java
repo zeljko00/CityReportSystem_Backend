@@ -5,4 +5,5 @@ import java.util.List;
 public interface ReportTypeService {
     List<String> getAllTypes();
     ReportType getByName(String name);
+    List<String> getAllTypesByDepartment(long id);
 }

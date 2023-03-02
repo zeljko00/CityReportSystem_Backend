@@ -1,6 +1,7 @@
 package is.cityreportsystem.services.implementations;
 
 import is.cityreportsystem.DAO.CityOfficialDAO;
+import is.cityreportsystem.DAO.CityServiceDAO;
 import is.cityreportsystem.DAO.ReportDAO;
 import is.cityreportsystem.model.*;
 import is.cityreportsystem.model.DTO.*;
@@ -30,17 +31,17 @@ public class ReportServiceImpl implements ReportService {
 
     private final ReportDAO reportDAO;
     private final CitizenService citizenService;
-    private final CityServiceService cityServiceService;
+    private final CityServiceDAO cityServiceDAO;
     private final CityOfficialDAO cityOfficialDAO;
     private final ReportImageService reportImageService;
     private final ReportTypeService reportTypeService;
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
 
-    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceService cityServiceService, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService) {
+    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceDAO cityServiceDAO, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService) {
         this.modelMapper = modelMapper;
         this.reportDAO = reportDAO;
         this.citizenService = citizenService;
-        this.cityServiceService = cityServiceService;
+        this.cityServiceDAO = cityServiceDAO;
         this.cityOfficialDAO = cityOfficialDAO;
         this.reportImageService = reportImageService;
         this.reportTypeService = reportTypeService;
@@ -180,12 +181,12 @@ public class ReportServiceImpl implements ReportService {
             CityOfficial user=cityOfficialDAO.findById(userId).get();
             if(user==null)
                 throw new Exception();
-            CityServiceDTO cityService=cityServiceService.getCityServiceById(departmentId);
+            CityService cityService=cityServiceDAO.findById(departmentId).get();
             if(cityService==null)
                 throw  new Exception();
             if(user.getDepartment().getId()!=departmentId)
                 throw new Exception();
-            List<String> types=cityService.getReportTypes();
+            List<String> types=cityService.getReportTypes().stream().map(t-> t.getName()).collect(Collectors.toList());
             Page<Report> page=null;
             if("-".equals(search)){
                 if("all".equals(typeFilter)){
@@ -227,5 +228,15 @@ public class ReportServiceImpl implements ReportService {
             return null;
         }
         return result;
+    }
+    public boolean addFeedback(long id,String feedback){
+        try{
+            Report report=reportDAO.findById(id).get();
+            report.setFeedback(report.getFeedback()+"||"+feedback);
+            reportDAO.saveAndFlush(report);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
     }
 }

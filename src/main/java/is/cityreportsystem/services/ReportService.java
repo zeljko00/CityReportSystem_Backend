@@ -15,5 +15,6 @@ public interface ReportService {
     void deleteImage(String id);
     boolean requireInfo(long id, String required);
     boolean provideInfo(long id, String required);
+    boolean addFeedback(long id,String feedback);
     PageDTO<ReportDTO> getReports(long userId,long departmentId,Pageable pageable, String search, String typeFilter, String stateFilter);
 }

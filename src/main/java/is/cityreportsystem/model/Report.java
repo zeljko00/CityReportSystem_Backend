@@ -23,6 +23,7 @@ public class Report {
 	private double y;
 	private String requiredAdditionalInfo;
 	private String providedAdditionalInfo;
+	private String feedback;
 	private boolean requiredInfo;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator", referencedColumnName = "id", nullable = true)

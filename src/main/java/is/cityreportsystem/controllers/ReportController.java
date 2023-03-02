@@ -43,6 +43,13 @@ public class ReportController {
                 e.printStackTrace();
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
+    }@PutMapping("/feedback/{id}")
+    public ResponseEntity<?> addFeedback(@PathVariable("id") long id, @RequestBody String feedback){
+        boolean result=reportService.addFeedback(id,feedback);
+        if(result)
+            return new ResponseEntity<>(HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     @PutMapping("/{id}")
     public ResponseEntity<?> requireAddtionalInfo(@PathVariable("id") long id, @RequestBody String required){
@@ -77,7 +84,7 @@ public class ReportController {
         reportService.deleteImage(id);
             return new ResponseEntity<>(HttpStatus.OK);
     }
-    @GetMapping("/{userId}/{departmentId}/{typeFilter}/{stateFilter}/{page}/{size}/{search}/{sort}/{dir}")
+    @GetMapping("/{userId}/{departmentId}/{page}/{size}/{typeFilter}/{stateFilter}/{search}/{sort}/{dir}")
     public ResponseEntity<?> getReports(@PathVariable("userId") long userId, @PathVariable("departmentId") long departmentId,@PathVariable("typeFilter") String typeFilter, @PathVariable("stateFilter") String stateFilter, @PathVariable("page") int page, @PathVariable("size") int size, @PathVariable("search") String search, @PathVariable("dir") String direction, @PathVariable("sort") String sort){
         Pageable pageable = PageRequest.of(page, size);
         if ("desc".equals(direction))

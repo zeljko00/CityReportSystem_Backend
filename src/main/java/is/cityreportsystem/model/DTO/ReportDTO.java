@@ -17,6 +17,7 @@ public class ReportDTO {
 	private double y;
 	private String requiredAdditionalInfo;
 	private String providedAdditionalInfo;
+	private String feedback;
 	private boolean requiredInfo;
 	private CitizenDTO creator;
 	private List<ImageDTO> images;

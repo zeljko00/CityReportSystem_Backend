@@ -12,5 +12,5 @@ public class CityServiceDTO {
     private String name;
     private String phone;
     private String mail;
-    List<String> reportTypes;
+//    List<String> reports;
 }

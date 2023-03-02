@@ -219,8 +219,10 @@ public class EventServiceImpl implements EventService {
     private EventDTO map(Event e) {
         List<Coordinate> list= e.getCoords();
         e.setCoords(null);
+        List<ReportType> l=e.getCreator().getDepartment().getReportTypes();
+        e.getCreator().getDepartment().setReportTypes(null);
         EventDTO temp = modelMapper.map(e, EventDTO.class);
-
+//        temp.getCreator().getDepartment().setReports(l.stream().map(t-> t.getName()).collect(Collectors.toList()));
         Map<Integer,List<CoordinateDTO>> collection=new HashMap<>();
         list.stream().forEach(c -> {
             if(collection.containsKey(c.getArea())==false)

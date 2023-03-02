@@ -3,6 +3,7 @@ package is.cityreportsystem.services.implementations;
 import is.cityreportsystem.DAO.CityServiceDAO;
 import is.cityreportsystem.model.CityService;
 import is.cityreportsystem.model.DTO.CityServiceDTO;
+import is.cityreportsystem.model.ReportType;
 import is.cityreportsystem.services.CityServiceService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -28,8 +29,10 @@ public class CityServiceServiceImpl implements CityServiceService {
         if(cityService==null)
             return null;
         else{
+            List<ReportType> list=cityService.getReportTypes();
+            cityService.setReportTypes(null);
             CityServiceDTO cityServiceDTO=modelMapper.map(cityService,CityServiceDTO.class);
-            cityServiceDTO.setReportTypes(cityService.getReportTypes().stream().map(t -> t.getName()).collect(Collectors.toList()));
+//            cityServiceDTO.setReports(list.stream().map(t -> t.getName()).collect(Collectors.toList()));
             return cityServiceDTO;
         }
     }
