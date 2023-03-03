@@ -15,6 +15,7 @@ public class Report {
 	private String title;
 	private String note;
 	private String date;
+	private String solvedDate;
 	private String content;
 	private String type;
 	@Enumerated(EnumType.STRING)

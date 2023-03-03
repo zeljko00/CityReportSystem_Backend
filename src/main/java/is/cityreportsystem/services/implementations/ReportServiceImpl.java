@@ -4,9 +4,15 @@ import is.cityreportsystem.DAO.CityOfficialDAO;
 import is.cityreportsystem.DAO.CityServiceDAO;
 import is.cityreportsystem.DAO.ReportDAO;
 import is.cityreportsystem.model.*;
-import is.cityreportsystem.model.DTO.*;
+import is.cityreportsystem.model.DTO.CitizenDTO;
+import is.cityreportsystem.model.DTO.PageDTO;
+import is.cityreportsystem.model.DTO.ReportDTO;
+import is.cityreportsystem.model.DTO.ReportRequest;
 import is.cityreportsystem.model.enums.ReportState;
-import is.cityreportsystem.services.*;
+import is.cityreportsystem.services.CitizenService;
+import is.cityreportsystem.services.ReportImageService;
+import is.cityreportsystem.services.ReportService;
+import is.cityreportsystem.services.ReportTypeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -19,7 +25,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +45,8 @@ public class ReportServiceImpl implements ReportService {
     private final ReportImageService reportImageService;
     private final ReportTypeService reportTypeService;
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private DateFormat dateFormatLocale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceDAO cityServiceDAO, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService) {
         this.modelMapper = modelMapper;
@@ -164,6 +175,7 @@ public class ReportServiceImpl implements ReportService {
             return false;
         }
     }
+
     public boolean provideInfo(long id, String required) {
         try {
             Report report = reportDAO.findById(id).get();
@@ -175,67 +187,102 @@ public class ReportServiceImpl implements ReportService {
             return false;
         }
     }
-    public   PageDTO<ReportDTO> getReports(long userId,long departmentId,Pageable pageable, String search, String typeFilter, String stateFilter){
+
+    public PageDTO<ReportDTO> getReports(long userId, long departmentId, Pageable pageable, String search, String typeFilter, String stateFilter) {
         PageDTO<ReportDTO> result = new PageDTO<>();
-        try{
-            CityOfficial user=cityOfficialDAO.findById(userId).get();
-            if(user==null)
+        try {
+            CityOfficial user = cityOfficialDAO.findById(userId).get();
+            if (user == null)
                 throw new Exception();
-            CityService cityService=cityServiceDAO.findById(departmentId).get();
-            if(cityService==null)
-                throw  new Exception();
-            if(user.getDepartment().getId()!=departmentId)
+            CityService cityService = cityServiceDAO.findById(departmentId).get();
+            if (cityService == null)
                 throw new Exception();
-            List<String> types=cityService.getReportTypes().stream().map(t-> t.getName()).collect(Collectors.toList());
-            Page<Report> page=null;
-            if("-".equals(search)){
-                if("all".equals(typeFilter)){
-                    if("all".equals(stateFilter)){
-                        page=reportDAO.findReportsByTypeIn(pageable,types);
-                    }else{
-                        page=reportDAO.findReportsByTypeInAndState(pageable,types,ReportState.valueOf(stateFilter));
+            if (user.getDepartment().getId() != departmentId)
+                throw new Exception();
+            List<String> types = cityService.getReportTypes().stream().map(t -> t.getName()).collect(Collectors.toList());
+            Page<Report> page = null;
+            if ("-".equals(search)) {
+                if ("all".equals(typeFilter)) {
+                    if ("all".equals(stateFilter)) {
+                        page = reportDAO.findReportsByTypeIn(pageable, types);
+                    } else {
+                        page = reportDAO.findReportsByTypeInAndState(pageable, types, ReportState.valueOf(stateFilter));
                     }
-                }else{
-                    if("all".equals(stateFilter)){
-                        page=reportDAO.findReportsByType(pageable,typeFilter);
-                    }else{
-                        page=reportDAO.findReportsByTypeAndState(pageable,typeFilter,ReportState.valueOf(stateFilter));
+                } else {
+                    if ("all".equals(stateFilter)) {
+                        page = reportDAO.findReportsByType(pageable, typeFilter);
+                    } else {
+                        page = reportDAO.findReportsByTypeAndState(pageable, typeFilter, ReportState.valueOf(stateFilter));
                     }
                 }
-            }else{
-                if("all".equals(typeFilter)){
-                    if("all".equals(stateFilter)){
-                        page=reportDAO.findReportsByTypeInAndTitleContainsIgnoreCase(pageable,types,search);
-                    }else{
-                        page=reportDAO.findReportsByTypeInAndStateAndTitleContainsIgnoreCase(pageable,types,ReportState.valueOf(stateFilter),search);
+            } else {
+                if ("all".equals(typeFilter)) {
+                    if ("all".equals(stateFilter)) {
+                        page = reportDAO.findReportsByTypeInAndTitleContainsIgnoreCase(pageable, types, search);
+                    } else {
+                        page = reportDAO.findReportsByTypeInAndStateAndTitleContainsIgnoreCase(pageable, types, ReportState.valueOf(stateFilter), search);
                     }
-                }else{
-                    if("all".equals(stateFilter)){
-                        page=reportDAO.findReportsByTypeAndTitleContainsIgnoreCase(pageable,typeFilter,search);
-                    }else{
-                        page=reportDAO.findReportsByTypeAndStateAndTitleContainsIgnoreCase(pageable,typeFilter,ReportState.valueOf(stateFilter),search);
+                } else {
+                    if ("all".equals(stateFilter)) {
+                        page = reportDAO.findReportsByTypeAndTitleContainsIgnoreCase(pageable, typeFilter, search);
+                    } else {
+                        page = reportDAO.findReportsByTypeAndStateAndTitleContainsIgnoreCase(pageable, typeFilter, ReportState.valueOf(stateFilter), search);
                     }
                 }
             }
             result.setPages(page.getTotalElements());
             result.setData(page.getContent().
                     stream().
-                    map( r -> modelMapper.map(r,ReportDTO.class)).
+                    map(r -> {
+                        ReportDTO temp = modelMapper.map(r, ReportDTO.class);
+                        if (temp.getSolvedDate() != null) {
+                            try {
+                                temp.setSolvedDate(dateFormatLocale.format(dateFormat.parse(temp.getSolvedDate())));
+                            } catch (Exception e) {
+                            }
+                        }
+                        return temp;
+                    }).
                     collect(Collectors.toList()));
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
         return result;
     }
-    public boolean addFeedback(long id,String feedback){
-        try{
-            Report report=reportDAO.findById(id).get();
-            report.setFeedback(report.getFeedback()+"||"+feedback);
+
+    public boolean addFeedback(long id, String feedback) {
+        try {
+            Report report = reportDAO.findById(id).get();
+            report.setFeedback(report.getFeedback().replace("null","") + "||" + feedback);
             reportDAO.saveAndFlush(report);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean changeState(long user, long id, String state) {
+        try {
+            CityOfficial cityOfficial = cityOfficialDAO.findById(user).get();
+            Report report = reportDAO.findById(id).get();
+            if (report.getRecepient().getId() != cityOfficial.getDepartment().getId())
+                throw new Exception();
+            System.out.println(state);
+            ReportState newState = ReportState.valueOf(state.replace("\"",""));
+            if (newState.equals(report.getState()) == false) {
+                report.setState(newState);
+                if (newState.equals(ReportState.CLOSED)) {
+                    report.setSolvedDate(dateFormat.format(new Date()));
+                    cityOfficial.setSolvedReports(cityOfficial.getSolvedReports() + 1);
+                    cityOfficialDAO.saveAndFlush(cityOfficial);
+                }
+                reportDAO.saveAndFlush(report);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

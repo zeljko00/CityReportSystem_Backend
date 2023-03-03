@@ -51,7 +51,7 @@ public class ReportController {
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @PutMapping("/{id}")
+    @PutMapping("/requireInfo/{id}")
     public ResponseEntity<?> requireAddtionalInfo(@PathVariable("id") long id, @RequestBody String required){
         boolean result=reportService.requireInfo(id,required.replace("\"",""));
         if(result)
@@ -66,6 +66,14 @@ public class ReportController {
             return new ResponseEntity<>(HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    @PutMapping("/state/{user}/{id}")
+    public ResponseEntity<?> changeState(@PathVariable("id") long id,@PathVariable("user") long user, @RequestBody String state){
+        boolean result=reportService.changeState(user,id,state);
+        if(result)
+            return new ResponseEntity<>(HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     @GetMapping("/author/{id}")
     public ResponseEntity<?> getReportsByAuthor(@PathVariable("id") long id){

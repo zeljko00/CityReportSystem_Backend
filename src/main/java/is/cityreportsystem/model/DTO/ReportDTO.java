@@ -10,6 +10,7 @@ public class ReportDTO {
 	private String title;
 	private String note;
 	private String date;
+	private String solvedDate;
 	private String content;
 	private String type;
 	private String state;

@@ -16,5 +16,6 @@ public interface ReportService {
     boolean requireInfo(long id, String required);
     boolean provideInfo(long id, String required);
     boolean addFeedback(long id,String feedback);
+    boolean changeState(long user,long id,String state);
     PageDTO<ReportDTO> getReports(long userId,long departmentId,Pageable pageable, String search, String typeFilter, String stateFilter);
 }

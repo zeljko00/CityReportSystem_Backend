@@ -19,5 +19,5 @@ public class CityOfficialDTO extends CitizenDTO {
 	private CityServiceDTO department;
 	private int createdEventsNum;
 	private int activeEventsNum;
-	private int solvedReportsNum;
+	private int solvedReports;
 }
