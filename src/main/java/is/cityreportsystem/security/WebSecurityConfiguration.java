@@ -67,6 +67,7 @@ public class WebSecurityConfiguration{
                 .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                 .requestMatchers(HttpMethod.GET, "/cityServices").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/statistics/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/events/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/events/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/events/**").permitAll()

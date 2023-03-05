@@ -24,4 +24,11 @@ public interface ReportDAO extends JpaRepository<Report,Long> {
     Page<Report> findReportsByTypeAndState(Pageable pageable,String type,ReportState state);
     Page<Report> findReportsByTypeAndTitleContainsIgnoreCase(Pageable pageable,String type,String search);
     Page<Report> findReportsByTypeAndStateAndTitleContainsIgnoreCase(Pageable pageable,String type,ReportState state,String search);
+
+    List<Report> findReportsByDateGreaterThanEqualAndDateIsLessThanEqual(String startDate,String endDate);
+    List<Report> findReportsByDateGreaterThanEqualAndDateIsLessThanEqualAndTypeIgnoreCase(String startDate,String endDate,String type);
+    List<Report> findReportsBySolvedDateGreaterThanEqualAndSolvedDateIsLessThanEqual(String startDate,String endDate);
+    List<Report> findReportsBySolvedDateGreaterThanEqualAndSolvedDateIsLessThanEqualAndTypeIgnoreCase(String startDate,String endDate,String type);
+    List<Report> findReportsBySolvedDateNotNull();
+
 }
