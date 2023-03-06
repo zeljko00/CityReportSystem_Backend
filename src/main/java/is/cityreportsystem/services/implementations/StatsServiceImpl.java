@@ -108,9 +108,10 @@ public class StatsServiceImpl implements StatsService {
             }
             result.setReportsPerType(reportsPerType);
             result.setAvgTimePerType(timePerType);
-            result.setDifferencePercentage((int) (maxTime.getNumber() / avg * 100));
-            result.setAvgPercentage((int) (avg / totalAvg * 100));
-            result.setSolvedPercentage((int) (solved.size() / reports.size() * 100));
+            result.setDifferencePercentage((int) (maxTime.getNumber() / avg * 100.0));
+            System.out.println(solved.size()+"/"+reports.size()+"*100="+((int) (Double.valueOf(solved.size()) / reports.size()*100.0)));
+            result.setAvgPercentage((int) (avg / totalAvg * 100.0));
+            result.setSolvedPercentage((int) (Double.valueOf(solved.size()) / reports.size()*100.0));
             return result;
         } catch (Exception ee) {
             ee.printStackTrace();
