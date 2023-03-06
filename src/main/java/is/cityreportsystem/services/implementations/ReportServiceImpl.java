@@ -101,8 +101,7 @@ public class ReportServiceImpl implements ReportService {
 
     public ReportDTO createReport(ReportRequest report) {
         Report reportEntity = modelMapper.map(report, Report.class);
-        DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        reportEntity.setDate(df.format(new Date()));
+        reportEntity.setDate(dateFormat.format(new Date()));
         reportEntity.setState(ReportState.RECEIVED);
         reportEntity.setId(-1l);
         reportEntity.setRequiredInfo(false);
