@@ -1,6 +1,7 @@
 package is.cityreportsystem.controllers;
 
 import is.cityreportsystem.model.DTO.Stats;
+import is.cityreportsystem.model.DTO.YearStats;
 import is.cityreportsystem.services.StatsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,14 @@ public class StatsController {
         Stats result=statsService.getStats(startDate,endDate,type);
         if(result!=null)
         return new ResponseEntity<>(result, HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping("/{year}")
+    public ResponseEntity<YearStats> getStats(@PathVariable("year") int year) {
+        YearStats result=statsService.getStatsByYear(year);
+        if(result!=null)
+            return new ResponseEntity<>(result, HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

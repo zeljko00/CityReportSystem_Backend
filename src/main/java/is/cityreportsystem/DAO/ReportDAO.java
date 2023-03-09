@@ -32,5 +32,7 @@ public interface ReportDAO extends JpaRepository<Report,Long> {
     List<Report> findReportsBySolvedDateNotNull();
     List<Report> findReportsBySolvedDate(String solvedDate);
     List<Report> findReportsByDate(String date);
+    List<Report> findReportsByDateContains(String year);
+    List<Report> findReportsBySolvedDateContains(String year);
 
 }
