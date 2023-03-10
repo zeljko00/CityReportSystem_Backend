@@ -57,7 +57,7 @@ public class StatsServiceImpl implements StatsService {
             }
             List<DataPerDay> dataPerDay = new ArrayList<>();
             ;
-            long days = beetween.size();
+            double days = beetween.size();
             List<Report> reports = new ArrayList<>();
             List<Report> solved = new ArrayList<>();
             if ("all".equals(type.toLowerCase())) {
