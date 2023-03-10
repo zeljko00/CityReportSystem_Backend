@@ -5,6 +5,7 @@ import is.cityreportsystem.model.CityService;
 import is.cityreportsystem.model.DTO.CityServiceDTO;
 import is.cityreportsystem.model.ReportType;
 import is.cityreportsystem.services.CityServiceService;
+import is.cityreportsystem.util.LoggerBean;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,12 @@ import java.util.stream.Collectors;
 public class CityServiceServiceImpl implements CityServiceService {
     private CityServiceDAO cityServiceDAO;
     private ModelMapper modelMapper;
+    private final LoggerBean loggerBean;
 
-    public CityServiceServiceImpl(CityServiceDAO cityServiceDAO, ModelMapper modelMapper){
+    public CityServiceServiceImpl(CityServiceDAO cityServiceDAO, ModelMapper modelMapper, LoggerBean loggerBean){
         this.cityServiceDAO=cityServiceDAO;
         this.modelMapper=modelMapper;
+        this.loggerBean = loggerBean;
     }
 
     public CityServiceDTO getCityServiceById(long id)

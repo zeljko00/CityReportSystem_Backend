@@ -1,0 +1,25 @@
+14:43:16.705 - org.springframework.security.authentication.BadCredentialsException: Bad credentials
+19:47:00.012 - java.lang.NumberFormatException: multiple points
+19:47:00.012 - java.lang.NumberFormatException: multiple points
+19:47:24.649 - java.lang.NumberFormatException: For input string: ".2002233E4.2002233E4"
+19:47:24.649 - java.lang.NumberFormatException: For input string: ""
+19:47:24.650 - java.lang.NumberFormatException: multiple points
+19:47:24.652 - java.lang.NumberFormatException: multiple points
+19:47:24.707 - java.lang.NumberFormatException: multiple points
+19:47:24.709 - java.lang.NumberFormatException: multiple points
+19:47:36.302 - java.lang.NumberFormatException: For input string: ""
+19:47:36.307 - java.lang.IllegalArgumentException: 2023-03-10 < +20232025-09-01
+19:50:19.074 - java.lang.NumberFormatException: multiple points
+19:50:19.075 - java.lang.NumberFormatException: multiple points
+19:50:19.088 - java.lang.NumberFormatException: multiple points
+19:50:19.089 - java.lang.NumberFormatException: multiple points
+19:50:19.101 - java.lang.NumberFormatException: multiple points
+19:50:19.102 - java.lang.NumberFormatException: multiple points
+19:51:12.704 - java.lang.NumberFormatException: multiple points
+19:51:12.705 - java.lang.NumberFormatException: multiple points
+19:59:51.850 - java.lang.NumberFormatException: multiple points
+19:59:51.850 - java.lang.NumberFormatException: multiple points
+19:59:51.992 - java.lang.NumberFormatException: For input string: ".20223E4.20223E4"
+20:25:54.558 - java.lang.NumberFormatException: multiple points
+20:25:54.559 - java.lang.NumberFormatException: multiple points
+20:26:00.643 - org.springframework.security.authentication.BadCredentialsException: Bad credentials

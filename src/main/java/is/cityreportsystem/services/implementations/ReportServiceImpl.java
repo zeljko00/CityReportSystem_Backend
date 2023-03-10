@@ -13,6 +13,7 @@ import is.cityreportsystem.services.CitizenService;
 import is.cityreportsystem.services.ReportImageService;
 import is.cityreportsystem.services.ReportService;
 import is.cityreportsystem.services.ReportTypeService;
+import is.cityreportsystem.util.LoggerBean;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -47,8 +48,9 @@ public class ReportServiceImpl implements ReportService {
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private DateFormat dateFormatLocale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    private final LoggerBean loggerBean;
 
-    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceDAO cityServiceDAO, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService) {
+    public ReportServiceImpl(ModelMapper modelMapper, ReportDAO reportDAO, CitizenService citizenService, CityServiceDAO cityServiceDAO, CityOfficialDAO cityOfficialDAO, ReportImageService reportImageService, ReportTypeService reportTypeService, LoggerBean loggerBean) {
         this.modelMapper = modelMapper;
         this.reportDAO = reportDAO;
         this.citizenService = citizenService;
@@ -56,6 +58,7 @@ public class ReportServiceImpl implements ReportService {
         this.cityOfficialDAO = cityOfficialDAO;
         this.reportImageService = reportImageService;
         this.reportTypeService = reportTypeService;
+        this.loggerBean = loggerBean;
     }
 
     public boolean saveImage(byte[] data, String id) {
@@ -77,6 +80,7 @@ public class ReportServiceImpl implements ReportService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }
@@ -96,6 +100,7 @@ public class ReportServiceImpl implements ReportService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
         }
     }
 
@@ -143,6 +148,7 @@ public class ReportServiceImpl implements ReportService {
                         System.out.println("saved");
                     } catch (Exception e) {
                         e.printStackTrace();
+                        loggerBean.logError(e);
                     }
                 }
             } else
@@ -171,6 +177,8 @@ public class ReportServiceImpl implements ReportService {
             reportDAO.save(report);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }
@@ -183,6 +191,8 @@ public class ReportServiceImpl implements ReportService {
             reportDAO.save(report);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }
@@ -246,6 +256,7 @@ public class ReportServiceImpl implements ReportService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
             return null;
         }
         return result;
@@ -264,6 +275,7 @@ public class ReportServiceImpl implements ReportService {
 
     public boolean changeState(long user, long id, String state) {
         try {
+            System.out.println(user);
             CityOfficial cityOfficial = cityOfficialDAO.findById(user).get();
             Report report = reportDAO.findById(id).get();
             if (report.getRecepient().getId() != cityOfficial.getDepartment().getId())
@@ -282,6 +294,7 @@ public class ReportServiceImpl implements ReportService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }

@@ -6,6 +6,7 @@ import is.cityreportsystem.security.JwtUtil;
 import is.cityreportsystem.services.AuthenticationService;
 import is.cityreportsystem.services.CitizenService;
 import is.cityreportsystem.services.CityOfficialService;
+import is.cityreportsystem.util.LoggerBean;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,13 +23,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final CityOfficialService cityOfficialService;
     private final ModelMapper modelMapper;
     private final JwtUtil jwtUtil;
+    private final LoggerBean loggerBean;
 
-    public AuthenticationServiceImpl(AuthenticationManager authenticationManager, CitizenService citizenService, CityOfficialService cityOfficialService, ModelMapper modelMapper, JwtUtil jwtUtil) {
+    public AuthenticationServiceImpl(AuthenticationManager authenticationManager, CitizenService citizenService, CityOfficialService cityOfficialService, ModelMapper modelMapper, JwtUtil jwtUtil, LoggerBean loggerBean) {
         this.authenticationManager = authenticationManager;
         this.citizenService = citizenService;
         this.cityOfficialService = cityOfficialService;
         this.modelMapper = modelMapper;
         this.jwtUtil = jwtUtil;
+        this.loggerBean = loggerBean;
     }
 
     @Override
@@ -60,6 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         loginResponse.setToken(token);
         return loginResponse;}catch(Exception e){
             e.printStackTrace();
+            loggerBean.logError(e);
             throw e;
         }
     }

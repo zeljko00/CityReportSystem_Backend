@@ -8,6 +8,7 @@ import is.cityreportsystem.model.DTO.*;
 import is.cityreportsystem.model.enums.EventType;
 import is.cityreportsystem.services.EventImageService;
 import is.cityreportsystem.services.EventService;
+import is.cityreportsystem.util.LoggerBean;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -37,14 +38,16 @@ public class EventServiceImpl implements EventService {
     private DateFormat dateFormatLocale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
     private HashMap<String, List<Tuple>> uploadedImages = new HashMap<String, List<Tuple>>();
     private HashMap<String, List<Tuple>> updatedImages = new HashMap<String, List<Tuple>>();
+    private final LoggerBean loggerBean;
 
-    public EventServiceImpl(EventDAO eventDAO, CityOfficialDAO cityOfficialDAO, EventImageService eventImageService, CoordinateDAO coordinateDAO, ModelMapper modelMapper) {
+    public EventServiceImpl(EventDAO eventDAO, CityOfficialDAO cityOfficialDAO, EventImageService eventImageService, CoordinateDAO coordinateDAO, ModelMapper modelMapper, LoggerBean loggerBean) {
         super();
         this.eventDAO = eventDAO;
         this.cityOfficialDAO = cityOfficialDAO;
         this.eventImageService = eventImageService;
         this.coordinateDAO = coordinateDAO;
         this.modelMapper = modelMapper;
+        this.loggerBean = loggerBean;
     }
 
     public List<EventDTO> getActiveEvents() {
@@ -266,6 +269,7 @@ public class EventServiceImpl implements EventService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
         }
     }
 
@@ -287,6 +291,7 @@ public class EventServiceImpl implements EventService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
         }
     }
 
@@ -306,6 +311,7 @@ public class EventServiceImpl implements EventService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
         }
     }
 
@@ -325,6 +331,7 @@ public class EventServiceImpl implements EventService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
         }
     }
 
@@ -367,6 +374,7 @@ public class EventServiceImpl implements EventService {
                             System.out.println("saved");
                         } catch (Exception ee) {
                             ee.printStackTrace();
+                            loggerBean.logError(ee);
                         }
                     }
                 } else
@@ -376,6 +384,7 @@ public class EventServiceImpl implements EventService {
             return result;
         } catch (Exception ex) {
             ex.printStackTrace();
+            loggerBean.logError(ex);
             return null;
         }
     }
@@ -440,6 +449,7 @@ public class EventServiceImpl implements EventService {
             return event;
         } catch (Exception e) {
             e.printStackTrace();
+            loggerBean.logError(e);
             return null;
         }
     }
@@ -456,6 +466,8 @@ public class EventServiceImpl implements EventService {
             } else
                 return false;
         } catch (Exception e) {
+            e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }
@@ -471,6 +483,8 @@ public class EventServiceImpl implements EventService {
             } else
                 return false;
         } catch (Exception e) {
+            e.printStackTrace();
+            loggerBean.logError(e);
             return false;
         }
     }

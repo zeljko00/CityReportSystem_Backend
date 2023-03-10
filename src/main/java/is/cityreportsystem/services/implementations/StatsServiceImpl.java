@@ -7,6 +7,7 @@ import is.cityreportsystem.model.DTO.*;
 import is.cityreportsystem.model.Report;
 import is.cityreportsystem.model.enums.ReportType;
 import is.cityreportsystem.services.StatsService;
+import is.cityreportsystem.util.LoggerBean;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -26,11 +27,13 @@ public class StatsServiceImpl implements StatsService {
     private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private final DateFormat input_df = new SimpleDateFormat("yyyy-MM-dd");
     private final ModelMapper modelMapper;
+    private final LoggerBean loggerBean;
 
-    public StatsServiceImpl(ReportDAO reportDAO, CityServiceDAO cityServiceDAO, ModelMapper modelMapper) {
+    public StatsServiceImpl(ReportDAO reportDAO, CityServiceDAO cityServiceDAO, ModelMapper modelMapper, LoggerBean loggerBean) {
         this.reportDAO = reportDAO;
         this.cityServiceDAO = cityServiceDAO;
         this.modelMapper = modelMapper;
+        this.loggerBean = loggerBean;
     }
 
     public Stats getStats(String startDate, String endDate, String type) {
@@ -54,6 +57,7 @@ public class StatsServiceImpl implements StatsService {
                         .collect(Collectors.toList());
             } catch (Exception e) {
                 e.printStackTrace();
+                loggerBean.logError(e);
             }
             List<DataPerDay> dataPerDay = new ArrayList<>();
             ;
@@ -89,7 +93,7 @@ public class StatsServiceImpl implements StatsService {
                     System.out.println(r.getSolvedDate());
                     System.out.println(r.getDate());
                     e.printStackTrace();
-
+                    loggerBean.logError(e);
                     return 0.0;
                 }
             }).reduce(0.0, (n1, n2) -> n1 + n2) / totalSolved.size();
@@ -99,6 +103,7 @@ public class StatsServiceImpl implements StatsService {
                     return (Double.valueOf(df.parse(r.getSolvedDate()).getTime() - df.parse(r.getDate()).getTime()) / 60000.0);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    loggerBean.logError(e);
                     return 0.0;
                 }
             }).reduce(0.0, (n1, n2) -> n1 + n2) / solved.size();
@@ -113,6 +118,7 @@ public class StatsServiceImpl implements StatsService {
                         tuple.setType(r.getType());
                         return tuple;
                     } catch (Exception e) {
+                        loggerBean.logError(e);
                         return new ReportTuple();
                     }
                 }).max((rt1, rt2) -> {
@@ -147,6 +153,7 @@ public class StatsServiceImpl implements StatsService {
                             return (Double.valueOf(df.parse(r.getSolvedDate()).getTime() - df.parse(r.getDate()).getTime()) / 3600000.0);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            loggerBean.logError(e);
                             return 0.0;
                         }
                     }).reduce(0.0, (n1, n2) -> n1 + n2) / solvedPerType.size());
@@ -156,6 +163,7 @@ public class StatsServiceImpl implements StatsService {
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        loggerBean.logError(e);
                         tuple2.setNumber(0.0);
                     }
                 } else
@@ -169,6 +177,7 @@ public class StatsServiceImpl implements StatsService {
                         return (Double.valueOf(df.parse(r.getSolvedDate()).getTime() - df.parse(r.getDate()).getTime()) / 3600000.0);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        loggerBean.logError(e);
                         return 0.0;
                     }
                 }).reduce(0.0, (n1, n2) -> n1 + n2));
@@ -184,7 +193,7 @@ public class StatsServiceImpl implements StatsService {
             result.setSolvedPercentage((int) (Double.valueOf(solved.size()) / reports.size() * 100.0));
             return result;
         } catch (Exception ee) {
-            ee.printStackTrace();
+            loggerBean.logError(ee);
             return null;
         }
     }
@@ -252,6 +261,7 @@ public class StatsServiceImpl implements StatsService {
                     return d;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    loggerBean.logError(e);
                     return 0.0;
                 }
             }).reduce(0.0, (n1, n2) -> n1 + n2 / temp.getSolved());

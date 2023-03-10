@@ -3,8 +3,8 @@ package is.cityreportsystem.services.implementations;
 import is.cityreportsystem.DAO.CitizenDAO;
 import is.cityreportsystem.model.Citizen;
 import is.cityreportsystem.model.DTO.JwtUser;
-import is.cityreportsystem.model.enums.UserStatus;
 import is.cityreportsystem.services.JwtUserDetailsService;
+import is.cityreportsystem.util.LoggerBean;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,12 @@ public class JwtUserDetailsServiceImpl implements JwtUserDetailsService {
 
     private final CitizenDAO citizenDAO;
     private final ModelMapper modelMapper;
+    private final LoggerBean loggerBean;
 
-    public JwtUserDetailsServiceImpl(CitizenDAO citizenDAO, ModelMapper modelMapper) {
+    public JwtUserDetailsServiceImpl(CitizenDAO citizenDAO, ModelMapper modelMapper, LoggerBean loggerBean) {
         this.citizenDAO = citizenDAO;
         this.modelMapper = modelMapper;
+        this.loggerBean = loggerBean;
     }
 
     // retrieving info about active user specified by username extracted from jwt

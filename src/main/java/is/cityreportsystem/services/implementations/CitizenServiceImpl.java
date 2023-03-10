@@ -1,9 +1,6 @@
 package is.cityreportsystem.services.implementations;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Base64.Encoder;
 
 import is.cityreportsystem.DAO.CitizenDAO;
 import is.cityreportsystem.model.Citizen;
@@ -11,9 +8,9 @@ import is.cityreportsystem.model.DTO.CitizenDTO;
 import is.cityreportsystem.model.enums.UserRole;
 import is.cityreportsystem.model.enums.UserStatus;
 import is.cityreportsystem.services.CitizenService;
+import is.cityreportsystem.util.LoggerBean;
 import jakarta.transaction.Transactional;
 
-import org.aspectj.weaver.bcel.BcelRenderer;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,10 +22,12 @@ public class CitizenServiceImpl implements CitizenService {
 	private CitizenDAO citizenDAO;
 	private ModelMapper modelMapper;
 	private BCryptPasswordEncoder encoder;
+	private final LoggerBean loggerBean;
 
-	public CitizenServiceImpl(CitizenDAO citizenDAO, ModelMapper modelMapper) throws NoSuchAlgorithmException {
+	public CitizenServiceImpl(CitizenDAO citizenDAO, ModelMapper modelMapper, LoggerBean loggerBean) throws NoSuchAlgorithmException {
 		this.citizenDAO = citizenDAO;
 		this.modelMapper = modelMapper;
+		this.loggerBean = loggerBean;
 		encoder = new BCryptPasswordEncoder();
 	}
 
@@ -56,6 +55,7 @@ public class CitizenServiceImpl implements CitizenService {
 				return c;
 			} catch (Exception e) {
 				e.printStackTrace(); //logovati
+				loggerBean.logError(e);
 			}
 		}
 		return null;

@@ -2,14 +2,13 @@ package is.cityreportsystem.services.implementations;
 
 import is.cityreportsystem.DAO.EventImageDAO;
 import is.cityreportsystem.model.EventImage;
-import is.cityreportsystem.model.ReportImage;
 import is.cityreportsystem.services.EventImageService;
+import is.cityreportsystem.util.LoggerBean;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -19,9 +18,11 @@ public class EventImageServiceImpl implements EventImageService {
     @Value("${events.images.repository}")
     private String imagesRepo;
     private EventImageDAO eventImageDAO;
+    private final LoggerBean loggerBean;
 
-    public EventImageServiceImpl(EventImageDAO eventImageDAO){
+    public EventImageServiceImpl(EventImageDAO eventImageDAO, LoggerBean loggerBean){
         this.eventImageDAO=eventImageDAO;
+        this.loggerBean = loggerBean;
     }
     public byte[] getImageById(long id){
         EventImage image=eventImageDAO.findById(id).get();
@@ -31,6 +32,7 @@ public class EventImageServiceImpl implements EventImageService {
             return result;
         }catch(Exception e){
             e.printStackTrace();
+            loggerBean.logError(e);
             return null;
         }
     }
