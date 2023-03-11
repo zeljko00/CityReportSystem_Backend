@@ -37,12 +37,4 @@ public class Event {
 	private List<EventImage> images;
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
 	private List<Coordinate> coords;
-
-	@Column(name = "updated_at")
-	@LastModifiedDate
-	private Date modifiedAt;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@LastModifiedBy
-	@JoinColumn(name = "updated_by", referencedColumnName = "id")
-	private Citizen updatedBy;
 }
