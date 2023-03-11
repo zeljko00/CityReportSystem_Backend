@@ -20,6 +20,7 @@ public class JwtUtil {
     public String getUsernameFromToken(String token) {      //retrieve username from jwt
         return getAllClaimsFromToken(token).getSubject();
     }
+    public String getRoleFromToken(String token){return getAllClaimsFromToken(token).get("role",String.class);}
 
     public Date getExpirationDateFromToken(String token) {       //retrieve expiration date from jwt
         return getAllClaimsFromToken(token).getExpiration();

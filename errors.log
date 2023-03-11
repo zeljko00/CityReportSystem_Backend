@@ -23,3 +23,32 @@
 20:25:54.558 - java.lang.NumberFormatException: multiple points
 20:25:54.559 - java.lang.NumberFormatException: multiple points
 20:26:00.643 - org.springframework.security.authentication.BadCredentialsException: Bad credentials
+00:13:31.933 - java.lang.NumberFormatException: For input string: ".33E1.33E1"
+00:13:31.973 - java.lang.NumberFormatException: multiple points
+00:13:31.977 - java.lang.NumberFormatException: multiple points
+00:13:31.982 - java.lang.NumberFormatException: multiple points
+00:13:32.003 - java.lang.NumberFormatException: multiple points
+13:37:07.404 - java.lang.Exception
+13:39:50.682 - java.lang.NumberFormatException: For input string: ""
+13:39:50.688 - java.lang.IllegalArgumentException: 2023-03-11 < 2200-03-01
+13:39:50.878 - java.lang.NumberFormatException: For input string: "E.42002233E4"
+13:39:50.881 - java.lang.NumberFormatException: For input string: "E.42002233"
+13:39:50.884 - java.lang.NumberFormatException: For input string: ""
+14:02:19.966 - java.lang.NumberFormatException: multiple points
+14:02:19.966 - java.lang.NumberFormatException: multiple points
+14:02:20.241 - java.lang.NumberFormatException: multiple points
+14:02:20.246 - java.lang.NumberFormatException: multiple points
+14:02:31.698 - java.lang.NumberFormatException: multiple points
+14:02:31.726 - java.lang.NumberFormatException: multiple points
+14:02:31.747 - java.lang.NumberFormatException: For input string: ""
+14:07:22.015 - java.lang.NumberFormatException: For input string: ""
+14:07:22.016 - java.lang.NumberFormatException: For input string: ""
+14:07:22.054 - java.lang.NumberFormatException: For input string: ""
+14:08:13.342 - java.lang.NumberFormatException: For input string: ""
+14:12:45.606 - java.lang.NumberFormatException: For input string: "2023."
+14:24:43.245 - java.lang.NumberFormatException: For input string: ".23023E.230234E4"
+14:24:43.245 - java.lang.NumberFormatException: For input string: ".23023E.230234E4"
+14:24:43.524 - java.lang.NumberFormatException: For input string: ""
+14:24:50.228 - java.lang.NumberFormatException: multiple points
+14:24:50.233 - java.lang.NumberFormatException: multiple points
+14:25:04.059 - java.lang.NumberFormatException: For input string: ""

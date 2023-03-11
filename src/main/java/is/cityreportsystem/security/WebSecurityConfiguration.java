@@ -1,14 +1,18 @@
 package is.cityreportsystem.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -60,23 +64,26 @@ public class WebSecurityConfiguration{
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.GET, "/login").permitAll() //enables unauthorized requests
-                .requestMatchers(HttpMethod.POST, "/signup").permitAll()
-                .requestMatchers(HttpMethod.GET, "/cityServices").permitAll()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+//                .and().authorizeHttpRequests()
+//                .requestMatchers(HttpMethod.GET, "/login").permitAll() //enables unauthorized requests
+//                .requestMatchers(HttpMethod.POST, "/signup").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/cityServices").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/events/active").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/events/types").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/reports/images/*").permitAll()
+//                .requestMatchers(HttpMethod.GET, "/statistics/**").hasAuthority("CITY_MANAGER")
+//                .anyRequest().authenticated();
+
 //                .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
 //                .requestMatchers(HttpMethod.GET, "/statistics/**").permitAll()
 //                .requestMatchers(HttpMethod.DELETE, "/events/**").permitAll()
 //                .requestMatchers(HttpMethod.PUT, "/events/**").permitAll()
 //                .requestMatchers(HttpMethod.POST, "/events/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/events/active").permitAll()
-                .requestMatchers(HttpMethod.GET, "/events/types").permitAll()
-                .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
-                .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
-                .requestMatchers(HttpMethod.GET, "/reports/images/*").permitAll()
 //                .requestMatchers(HttpMethod.GET, "/reports/**").permitAll()
 //                .requestMatchers(HttpMethod.PUT, "/reports/**").permitAll()
 //                .requestMatchers(HttpMethod.POST, "/reports").permitAll()
@@ -86,26 +93,34 @@ public class WebSecurityConfiguration{
 //                .requestMatchers(HttpMethod.POST, "/reports/images/upload").permitAll()
 //                .requestMatchers(HttpMethod.DELETE, "/reports/images/*").permitAll()
 
-                .anyRequest()
-                .authenticated();
+        http=createAuthorizationRules(http);
         http.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
 
-//    private HttpSecurity createAuthorizationRules(HttpSecurity http) throws Exception {
-//        AuthorizationRules authorizationRules = new ObjectMapper().readValue(new ClassPathResource("rules.json").getInputStream(), AuthorizationRules.class);
-//        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry interceptor = http.authorizeRequests();
-//        interceptor = interceptor.antMatchers(HttpMethod.POST, "/login").permitAll().antMatchers(HttpMethod.POST, "/sign-up").permitAll();
-//        for (Rule rule : authorizationRules.getRules()) {
-//            if (rule.getMethods().isEmpty())
-//                interceptor = interceptor.antMatchers(rule.getPattern()).hasAnyAuthority(rule.getRoles().toArray(String[]::new));
-//            else for (String method : rule.getMethods()) {
-//                interceptor = interceptor.antMatchers(HttpMethod.resolve(method), rule.getPattern()).hasAnyAuthority(rule.getRoles().toArray(String[]::new));
-//            }
-//        }
-//        return interceptor.anyRequest().denyAll().and();
-//    }
+    private HttpSecurity createAuthorizationRules(HttpSecurity http) throws Exception {
+        AuthorizationRules authorizationRules = new ObjectMapper().readValue(new ClassPathResource("rules.json").getInputStream(), AuthorizationRules.class);
+       AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry=http.authorizeHttpRequests()
+                .requestMatchers(HttpMethod.GET, "/login").permitAll() //enables unauthorized requests
+                .requestMatchers(HttpMethod.POST, "/signup").permitAll()
+                .requestMatchers(HttpMethod.GET, "/cityServices").permitAll()
+                .requestMatchers(HttpMethod.GET, "/events/active/images/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/events/active").permitAll()
+                .requestMatchers(HttpMethod.GET, "/events/types").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/types").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/states").permitAll()
+                .requestMatchers(HttpMethod.GET, "/reports/images/*").permitAll();
+        for (Rule rule : authorizationRules.getRules()) {
+            System.out.println(rule.getPattern());
+            if (rule.getMethods().isEmpty())
+                registry=registry.requestMatchers(rule.getPattern()).hasAnyAuthority(rule.getRoles().toArray(String[]::new));
+            else for (String method : rule.getMethods()) {
+                registry=registry.requestMatchers(HttpMethod.valueOf(method), rule.getPattern()).hasAnyAuthority(rule.getRoles().toArray(String[]::new));
+            }
+        }
+        return registry.anyRequest().authenticated().and();
+    }
 
     // cors filter - we shouldn't allow all methods origins and headers...
     @Bean

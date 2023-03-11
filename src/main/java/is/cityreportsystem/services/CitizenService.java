@@ -5,6 +5,7 @@ import is.cityreportsystem.model.DTO.CitizenDTO;
 
 public interface CitizenService {
 	CitizenDTO findCitizenById(long id);
+	Citizen findById(long id);
 	CitizenDTO createCitizen(CitizenDTO citizen);
 //	CitizenDTO updateCitizen(CitizenDTO citizen);
 }

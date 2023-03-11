@@ -35,6 +35,9 @@ public class CitizenServiceImpl implements CitizenService {
 		Citizen citizen = citizenDAO.findById(id).get();  //findBy vraca Optional<TYPE>
 		return modelMapper.map(citizen, CitizenDTO.class);
 	}
+	public Citizen findById(long id) {
+		return citizenDAO.findById(id).get();  //findBy vraca Optional<TYPE>
+	}
 
 	public CitizenDTO createCitizen(CitizenDTO c) {
 		System.out.println("Creating citizen!");

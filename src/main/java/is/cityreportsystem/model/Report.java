@@ -3,11 +3,18 @@ package is.cityreportsystem.model;
 import is.cityreportsystem.model.enums.ReportState;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class Report {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +41,13 @@ public class Report {
 	private CityService recepient;
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY)
 	private List<ReportImage> images;
+
+
+	@Column(name = "updated_at")
+	@LastModifiedDate
+	private Date modifiedAt;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@LastModifiedBy
+	@JoinColumn(name = "updated_by", referencedColumnName = "id")
+	private Citizen updatedBy;
 }

@@ -4,11 +4,18 @@ import is.cityreportsystem.model.enums.EventType;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Type;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class Event {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +37,12 @@ public class Event {
 	private List<EventImage> images;
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
 	private List<Coordinate> coords;
+
+	@Column(name = "updated_at")
+	@LastModifiedDate
+	private Date modifiedAt;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@LastModifiedBy
+	@JoinColumn(name = "updated_by", referencedColumnName = "id")
+	private Citizen updatedBy;
 }
